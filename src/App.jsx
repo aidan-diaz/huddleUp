@@ -5,6 +5,8 @@ import ChatLayout from './components/chat/ChatLayout';
 import ErrorBoundary from './components/errors/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import { usePresence } from './hooks/useAuth';
+import { CallProvider, useCall } from './hooks/useCall';
+import { VideoRoom, IncomingCallModal } from './components/calls';
 
 function App() {
   return (
@@ -36,7 +38,7 @@ function MainContent() {
 
 /**
  * Wrapper component for authenticated users
- * Handles presence tracking
+ * Handles presence tracking and call management
  */
 function AuthenticatedApp() {
   // Initialize presence tracking (sends heartbeat, handles visibility changes)
@@ -44,10 +46,42 @@ function AuthenticatedApp() {
   
   return (
     <ErrorBoundary name="ChatApp">
+      <CallProvider>
+        <CallAwareApp />
+      </CallProvider>
+    </ErrorBoundary>
+  );
+}
+
+/**
+ * Inner component that can use call hooks
+ */
+function CallAwareApp() {
+  const { activeCall, isInCall, setCall, clearCall } = useCall();
+  
+  return (
+    <>
+      {/* Main chat routes */}
       <Routes>
         <Route path="/*" element={<ChatLayout />} />
       </Routes>
-    </ErrorBoundary>
+      
+      {/* Incoming call modal - shows when there's an incoming call */}
+      <IncomingCallModal 
+        onAnswer={(callData) => setCall(callData)}
+      />
+      
+      {/* Active call overlay */}
+      {isInCall && activeCall && (
+        <VideoRoom
+          callId={activeCall.callId}
+          token={activeCall.token}
+          roomName={activeCall.roomName}
+          callType={activeCall.callType}
+          onLeave={clearCall}
+        />
+      )}
+    </>
   );
 }
 

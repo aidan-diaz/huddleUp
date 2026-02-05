@@ -1,0 +1,71 @@
+/* EventModal Styles */
+.event-modal {
+  max-width: 480px;
+}
+
+.event-modal__error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.event-modal__field {
+  margin-bottom: var(--spacing-md);
+}
+
+.event-modal__field label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.event-modal__field input,
+.event-modal__field textarea {
+  width: 100%;
+}
+
+.event-modal__field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.event-modal__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.event-modal__checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.event-modal__checkbox label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.event-modal__time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.event-modal__delete-btn {
+  margin-right: auto;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.event-modal__delete-btn:hover {
+  background-color: var(--color-error);
+  color: white;
+}

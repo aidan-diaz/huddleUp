@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import ConversationList from './ConversationList';
@@ -18,6 +19,10 @@ export default function Sidebar({ isOpen, onToggle }) {
   
   const currentUser = useQuery(api.users.getCurrentUser);
   const { signOut } = useAuthActions();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isCalendarView = location.pathname === '/calendar';
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,7 +43,15 @@ export default function Sidebar({ isOpen, onToggle }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__header">
-        <h1 className="sidebar__logo">HuddleUp</h1>
+        <h1 
+          className="sidebar__logo sidebar__logo--clickable"
+          onClick={() => navigate('/')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/')}
+        >
+          HuddleUp
+        </h1>
         <div className="sidebar__header-actions">
           <NotificationBell />
           <button 
@@ -97,6 +110,21 @@ export default function Sidebar({ isOpen, onToggle }) {
           onClick={() => setShowCreateGroup(true)}
         >
           + New Group
+        </button>
+      </div>
+
+      <div className="sidebar__nav-links">
+        <button
+          className={`sidebar__nav-link ${!isCalendarView ? 'sidebar__nav-link--active' : ''}`}
+          onClick={() => navigate('/')}
+        >
+          💬 Messages
+        </button>
+        <button
+          className={`sidebar__nav-link ${isCalendarView ? 'sidebar__nav-link--active' : ''}`}
+          onClick={() => navigate('/calendar')}
+        >
+          📅 Calendar
         </button>
       </div>
 

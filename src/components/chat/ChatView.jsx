@@ -79,6 +79,8 @@ export default function ChatView({ type }) {
             ? conversation?.otherUser?.presenceStatus
             : undefined
         }
+        conversationId={type === 'conversation' ? conversationId : undefined}
+        groupId={type === 'group' ? groupId : undefined}
         onShowDetails={() => setShowDetails(!showDetails)}
       />
 

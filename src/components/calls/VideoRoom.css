@@ -1,0 +1,213 @@
+/* VideoRoom Component Styles */
+.video-room {
+  position: fixed;
+  inset: 0;
+  background-color: #1a1a2e;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-room__livekit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-room__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.video-room__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.video-room__room-info {
+  color: white;
+  font-size: var(--font-size-sm);
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+}
+
+.video-room__grid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  overflow: hidden;
+}
+
+.video-room__grid-layout {
+  width: 100%;
+  height: 100%;
+}
+
+.video-room__controls {
+  padding: var(--spacing-md);
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.video-room__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: white;
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.video-room__error h3 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.video-room__error p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Fallback View (when LiveKit not configured) */
+.video-room--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-room__fallback-content {
+  text-align: center;
+  color: white;
+  padding: var(--spacing-xl);
+  max-width: 400px;
+}
+
+.video-room__fallback-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.video-room__fallback-content h2 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.video-room__fallback-message {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.video-room__fallback-message code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.video-room__fallback-info {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.video-room__fallback-info p {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.6);
+  margin: var(--spacing-xs) 0;
+}
+
+/* Audio Call View */
+.audio-call-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.audio-call-view__participants {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl);
+}
+
+.audio-call-view__participant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.audio-call-view__avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #818cf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.audio-call-view__participant:hover .audio-call-view__avatar {
+  transform: scale(1.05);
+}
+
+.audio-call-view__avatar span {
+  font-size: 3rem;
+  color: white;
+  font-weight: 600;
+}
+
+.audio-call-view__name {
+  color: white;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}
+
+.audio-call-view__speaking {
+  font-size: var(--font-size-xs);
+  color: var(--color-success);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .audio-call-view__avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .audio-call-view__avatar span {
+    font-size: 2rem;
+  }
+
+  .audio-call-view__participants {
+    gap: var(--spacing-lg);
+  }
+}

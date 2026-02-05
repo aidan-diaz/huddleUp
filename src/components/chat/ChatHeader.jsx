@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import UserPresence from '../common/UserPresence';
+import { useCall } from '../../hooks/useCall';
 import './ChatHeader.css';
 
 export default function ChatHeader({
@@ -8,8 +10,30 @@ export default function ChatHeader({
   type,
   avatarUrl,
   presenceStatus,
+  conversationId,
+  groupId,
   onShowDetails,
 }) {
+  const { startCall, isInCall } = useCall();
+  const [isStartingCall, setIsStartingCall] = useState(false);
+
+  const handleStartCall = async (callType) => {
+    if (isInCall || isStartingCall) return;
+    
+    try {
+      setIsStartingCall(true);
+      await startCall({
+        conversationId: type === 'conversation' ? conversationId : undefined,
+        groupId: type === 'group' ? groupId : undefined,
+        type: callType,
+      });
+    } catch (error) {
+      console.error('Error starting call:', error);
+    } finally {
+      setIsStartingCall(false);
+    }
+  };
+
   return (
     <header className="chat-header">
       <div className="chat-header__info">
@@ -38,24 +62,24 @@ export default function ChatHeader({
       </div>
 
       <div className="chat-header__actions">
-        {type === 'conversation' && (
-          <>
-            <button
-              className="chat-header__action"
-              title="Start audio call"
-              aria-label="Start audio call"
-            >
-              📞
-            </button>
-            <button
-              className="chat-header__action"
-              title="Start video call"
-              aria-label="Start video call"
-            >
-              📹
-            </button>
-          </>
-        )}
+        <button
+          className="chat-header__action"
+          title="Start audio call"
+          aria-label="Start audio call"
+          onClick={() => handleStartCall('audio')}
+          disabled={isInCall || isStartingCall}
+        >
+          📞
+        </button>
+        <button
+          className="chat-header__action"
+          title="Start video call"
+          aria-label="Start video call"
+          onClick={() => handleStartCall('video')}
+          disabled={isInCall || isStartingCall}
+        >
+          📹
+        </button>
         <button
           className="chat-header__action"
           onClick={onShowDetails}
@@ -75,5 +99,7 @@ ChatHeader.propTypes = {
   type: PropTypes.oneOf(['conversation', 'group']).isRequired,
   avatarUrl: PropTypes.string,
   presenceStatus: PropTypes.oneOf(['active', 'away', 'busy', 'inCall', 'offline']),
+  conversationId: PropTypes.string,
+  groupId: PropTypes.string,
   onShowDetails: PropTypes.func.isRequired,
 };
