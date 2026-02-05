@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import { presenceStatusValidator } from './lib/validators';
 import {
   getCurrentTimestamp,
@@ -63,26 +64,22 @@ export const updatePresenceStatus = mutation({
     status: presenceStatusValidator,
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error('User not found');
     }
 
-    await ctx.db.patch(user._id, {
+    await ctx.db.patch(userId, {
       presenceStatus: args.status,
       lastHeartbeat: getCurrentTimestamp(),
     });
 
-    return user._id;
+    return userId;
   },
 });
 
@@ -92,22 +89,21 @@ export const updatePresenceStatus = mutation({
 export const sendHeartbeat = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error('User not found');
     }
 
     const now = getCurrentTimestamp();
-    const updates: { lastHeartbeat: number; presenceStatus?: string } = {
+    const updates: { 
+      lastHeartbeat: number; 
+      presenceStatus?: 'active' | 'away' | 'busy' | 'inCall' | 'offline';
+    } = {
       lastHeartbeat: now,
     };
 
@@ -116,8 +112,8 @@ export const sendHeartbeat = mutation({
       updates.presenceStatus = 'active';
     }
 
-    await ctx.db.patch(user._id, updates);
-    return user._id;
+    await ctx.db.patch(userId, updates);
+    return userId;
   },
 });
 
@@ -152,16 +148,13 @@ export const getUser = query({
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    
+    if (!userId) {
       return null;
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     return user;
   },
 });
@@ -175,8 +168,8 @@ export const searchUsers = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
@@ -189,7 +182,7 @@ export const searchUsers = query({
     // Filter users matching search term (excluding current user)
     const matchingUsers = allUsers
       .filter((user) => {
-        if (user.email === identity.email) return false;
+        if (user._id === userId) return false;
         const nameMatch = user.name?.toLowerCase().includes(searchLower);
         const emailMatch = user.email.toLowerCase().includes(searchLower);
         return nameMatch || emailMatch;
@@ -215,16 +208,12 @@ export const updateProfile = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error('User not found');
     }
@@ -233,7 +222,7 @@ export const updateProfile = mutation({
     if (args.name !== undefined) updates.name = args.name;
     if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl;
 
-    await ctx.db.patch(user._id, updates);
-    return user._id;
+    await ctx.db.patch(userId, updates);
+    return userId;
   },
 });

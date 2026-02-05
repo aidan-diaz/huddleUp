@@ -1,0 +1,127 @@
+.message-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+}
+
+.message-skeleton__item {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  padding-left: 44px;
+}
+
+.message-skeleton__item--own {
+  flex-direction: row-reverse;
+  padding-left: 0;
+}
+
+.message-skeleton__item--with-avatar {
+  margin-top: var(--spacing-md);
+}
+
+.message-skeleton__avatar {
+  position: absolute;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.message-skeleton__bubble {
+  max-width: 70%;
+  min-width: 120px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.message-skeleton__item--own .message-skeleton__bubble {
+  background-color: var(--color-primary);
+  opacity: 0.3;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.message-skeleton__sender {
+  width: 80px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.message-skeleton__text {
+  width: 200px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.message-skeleton__text--short {
+  width: 100px;
+}
+
+.message-skeleton__time {
+  width: 40px;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  margin-left: auto;
+}
+
+/* Skeleton Animation */
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    var(--color-surface-elevated) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Conversation List Skeleton */
+.conversation-skeleton {
+  padding: var(--spacing-sm);
+}
+
+.conversation-skeleton__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+}
+
+.conversation-skeleton__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.conversation-skeleton__content {
+  flex: 1;
+}
+
+.conversation-skeleton__name {
+  width: 120px;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.conversation-skeleton__preview {
+  width: 180px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
