@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -12,13 +12,56 @@ import {
   useTracks,
   useRoomContext,
   useParticipants,
+  useLocalParticipant,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
+import {
+  BackgroundProcessor,
+  ProcessorWrapper,
+} from '@livekit/track-processors';
 import PropTypes from 'prop-types';
 import '@livekit/components-styles';
 import './VideoRoom.css';
 
 const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL || 'wss://localhost:7880';
+
+// Virtual background images - using public domain images
+const VIRTUAL_BACKGROUNDS = [
+  {
+    id: 'blur',
+    name: 'Blur',
+    type: 'blur',
+    icon: '🔵',
+  },
+  {
+    id: 'office',
+    name: 'Office',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80',
+    icon: '🏢',
+  },
+  {
+    id: 'nature',
+    name: 'Nature',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80',
+    icon: '🌲',
+  },
+  {
+    id: 'beach',
+    name: 'Beach',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80',
+    icon: '🏖️',
+  },
+  {
+    id: 'space',
+    name: 'Space',
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1462332420958-a05d1e002413?w=1920&q=80',
+    icon: '🌌',
+  },
+];
 
 /**
  * Main VideoRoom component - handles the LiveKit video call UI
@@ -118,10 +161,100 @@ VideoRoom.propTypes = {
 function VideoCallContent({ callType, roomName, onLeave }) {
   const room = useRoomContext();
   const participants = useParticipants();
+  const { localParticipant } = useLocalParticipant();
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
   ]);
+
+  const [backgroundMode, setBackgroundMode] = useState('none');
+  const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
+  const [isProcessorSupported, setIsProcessorSupported] = useState(true);
+  const processorRef = useRef(null);
+
+  // Initialize background processor
+  useEffect(() => {
+    if (callType !== 'video') return;
+
+    // Check if background processing is supported
+    const checkSupport = async () => {
+      try {
+        // Try to create a processor to check support
+        const testProcessor = new BackgroundProcessor({ mode: 'background-blur' });
+        setIsProcessorSupported(true);
+      } catch (err) {
+        console.warn('Background processing not supported:', err);
+        setIsProcessorSupported(false);
+      }
+    };
+    
+    checkSupport();
+
+    return () => {
+      // Cleanup processor on unmount
+      if (processorRef.current) {
+        processorRef.current.destroy?.();
+        processorRef.current = null;
+      }
+    };
+  }, [callType]);
+
+  // Apply background effect
+  const applyBackground = useCallback(async (background) => {
+    if (!localParticipant || callType !== 'video') return;
+
+    const cameraTrack = localParticipant.getTrackPublication(Track.Source.Camera)?.track;
+    if (!cameraTrack) {
+      console.warn('No camera track available');
+      return;
+    }
+
+    try {
+      // Remove existing processor if any
+      if (processorRef.current) {
+        await cameraTrack.stopProcessor();
+        processorRef.current = null;
+      }
+
+      if (background === 'none') {
+        setBackgroundMode('none');
+        return;
+      }
+
+      let processor;
+      
+      if (background === 'blur') {
+        processor = new BackgroundProcessor({
+          mode: 'background-blur',
+          blurRadius: 15,
+        });
+      } else {
+        // Virtual background with image
+        const bg = VIRTUAL_BACKGROUNDS.find(b => b.id === background);
+        if (bg && bg.type === 'image') {
+          processor = new BackgroundProcessor({
+            mode: 'virtual-background',
+            imagePath: bg.url,
+          });
+        }
+      }
+
+      if (processor) {
+        await cameraTrack.setProcessor(processor);
+        processorRef.current = processor;
+        setBackgroundMode(background);
+      }
+    } catch (err) {
+      console.error('Error applying background:', err);
+      // Reset state on error
+      setBackgroundMode('none');
+    }
+  }, [localParticipant, callType]);
+
+  const handleBackgroundSelect = (bgId) => {
+    applyBackground(bgId);
+    setShowBackgroundMenu(false);
+  };
 
   return (
     <div className="video-room__content">
@@ -129,6 +262,41 @@ function VideoCallContent({ callType, roomName, onLeave }) {
         <span className="video-room__room-info">
           {callType === 'video' ? '📹' : '📞'} {participants.length} participant{participants.length !== 1 ? 's' : ''}
         </span>
+        
+        {/* Background selector button - only for video calls */}
+        {callType === 'video' && isProcessorSupported && (
+          <div className="video-room__background-control">
+            <button
+              className={`video-room__bg-btn ${backgroundMode !== 'none' ? 'video-room__bg-btn--active' : ''}`}
+              onClick={() => setShowBackgroundMenu(!showBackgroundMenu)}
+              title="Change background"
+            >
+              🖼️ Background
+            </button>
+            
+            {showBackgroundMenu && (
+              <div className="video-room__bg-menu">
+                <button
+                  className={`video-room__bg-option ${backgroundMode === 'none' ? 'video-room__bg-option--selected' : ''}`}
+                  onClick={() => handleBackgroundSelect('none')}
+                >
+                  <span className="video-room__bg-icon">❌</span>
+                  <span>None</span>
+                </button>
+                {VIRTUAL_BACKGROUNDS.map((bg) => (
+                  <button
+                    key={bg.id}
+                    className={`video-room__bg-option ${backgroundMode === bg.id ? 'video-room__bg-option--selected' : ''}`}
+                    onClick={() => handleBackgroundSelect(bg.id)}
+                  >
+                    <span className="video-room__bg-icon">{bg.icon}</span>
+                    <span>{bg.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="video-room__grid">
