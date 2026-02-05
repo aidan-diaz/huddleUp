@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import { getCurrentTimestamp, isPresenceStale } from './lib/utils';
 
 /**
@@ -10,16 +11,13 @@ export const getOrCreateConversation = mutation({
     otherUserId: v.id('users'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -66,16 +64,13 @@ export const getOrCreateConversation = mutation({
 export const listConversations = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       return [];
@@ -163,16 +158,13 @@ export const getConversation = query({
     conversationId: v.id('directConversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');

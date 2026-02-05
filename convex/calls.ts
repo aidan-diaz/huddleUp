@@ -1,8 +1,24 @@
 import { v } from 'convex/values';
-import { mutation, query, action, internalMutation } from './_generated/server';
+import { mutation, query, action, internalMutation, internalQuery } from './_generated/server';
 import { internal } from './_generated/api';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import { getCurrentTimestamp } from './lib/utils';
 import { callTypeValidator, callStatusValidator } from './lib/validators';
+
+/**
+ * Internal query to get current user for actions
+ */
+export const getCurrentUserForAction = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+    const user = await ctx.db.get(userId);
+    return user;
+  },
+});
 
 /**
  * Create a new call and generate LiveKit room
@@ -14,8 +30,9 @@ export const createCall = action({
     type: callTypeValidator,
   },
   handler: async (ctx, args): Promise<{ callId: string; token: string; roomName: string }> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    // Get current user via internal query
+    const currentUser = await ctx.runQuery(internal.calls.getCurrentUserForAction, {});
+    if (!currentUser) {
       throw new Error('Not authenticated');
     }
 
@@ -33,15 +50,15 @@ export const createCall = action({
       groupId: args.groupId,
       type: args.type,
       roomName,
-      initiatorEmail: identity.email!,
+      initiatorId: currentUser._id,
     });
 
-    // Generate LiveKit token for initiator
-    const token = await generateLiveKitToken(
+    // Generate LiveKit token for initiator (using Node.js runtime action)
+    const token = await ctx.runAction(internal.livekit.generateToken, {
       roomName,
-      identity.email!,
-      identity.name || identity.email!
-    );
+      identity: currentUser._id,
+      name: currentUser.name || currentUser.email,
+    });
 
     return { callId, token, roomName };
   },
@@ -56,14 +73,11 @@ export const createCallRecord = internalMutation({
     groupId: v.optional(v.id('groups')),
     type: callTypeValidator,
     roomName: v.string(),
-    initiatorEmail: v.string(),
+    initiatorId: v.id('users'),
   },
   handler: async (ctx, args) => {
-    // Get initiator user
-    const initiator = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', args.initiatorEmail))
-      .first();
+    // Verify initiator user exists
+    const initiator = await ctx.db.get(args.initiatorId);
 
     if (!initiator) {
       throw new Error('User not found');
@@ -106,23 +120,24 @@ export const joinCall = action({
     callId: v.id('calls'),
   },
   handler: async (ctx, args): Promise<{ token: string; roomName: string }> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    // Get current user via internal query
+    const currentUser = await ctx.runQuery(internal.calls.getCurrentUserForAction, {});
+    if (!currentUser) {
       throw new Error('Not authenticated');
     }
 
     // Get call details and join
     const result = await ctx.runMutation(internal.calls.addParticipant, {
       callId: args.callId,
-      userEmail: identity.email!,
+      userId: currentUser._id,
     });
 
-    // Generate LiveKit token
-    const token = await generateLiveKitToken(
-      result.roomName,
-      identity.email!,
-      identity.name || identity.email!
-    );
+    // Generate LiveKit token (using Node.js runtime action)
+    const token = await ctx.runAction(internal.livekit.generateToken, {
+      roomName: result.roomName,
+      identity: currentUser._id,
+      name: currentUser.name || currentUser.email,
+    });
 
     return { token, roomName: result.roomName };
   },
@@ -134,7 +149,7 @@ export const joinCall = action({
 export const addParticipant = internalMutation({
   args: {
     callId: v.id('calls'),
-    userEmail: v.string(),
+    userId: v.id('users'),
   },
   handler: async (ctx, args) => {
     const call = await ctx.db.get(args.callId);
@@ -146,10 +161,7 @@ export const addParticipant = internalMutation({
       throw new Error('Call has already ended');
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', args.userEmail))
-      .first();
+    const user = await ctx.db.get(args.userId);
 
     if (!user) {
       throw new Error('User not found');
@@ -227,15 +239,12 @@ export const leaveCall = mutation({
     callId: v.id('calls'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const user = await ctx.db.get(userId);
 
     if (!user) {
       throw new Error('User not found');
@@ -394,15 +403,12 @@ export const getCallHistory = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const user = await ctx.db.get(userId);
 
     if (!user) {
       return [];
@@ -479,15 +485,12 @@ export const getCallHistory = query({
 export const getActiveCall = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return null;
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const user = await ctx.db.get(userId);
 
     if (!user) {
       return null;
@@ -519,15 +522,12 @@ export const getActiveCall = query({
 export const getIncomingCalls = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return [];
     }
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const user = await ctx.db.get(userId);
 
     if (!user) {
       return [];
@@ -592,41 +592,6 @@ export const getIncomingCalls = query({
     return incomingCalls;
   },
 });
-
-/**
- * Helper function to generate LiveKit token
- * In production, use the @livekit/server-sdk package
- */
-async function generateLiveKitToken(
-  roomName: string,
-  identity: string,
-  name: string
-): Promise<string> {
-  // Get environment variables
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
-
-  if (!apiKey || !apiSecret) {
-    // Return a placeholder for development without LiveKit configured
-    console.warn('LiveKit credentials not configured. Using placeholder token.');
-    return `dev-token-${roomName}-${identity}`;
-  }
-
-  // In production, use the LiveKit Server SDK to generate proper JWT tokens
-  // For now, we'll create a basic structure
-  // You would use: import { AccessToken } from 'livekit-server-sdk';
-  
-  // Placeholder implementation - replace with actual LiveKit SDK in production
-  const tokenData = {
-    room: roomName,
-    identity,
-    name,
-    exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiry
-  };
-
-  // This is a simplified placeholder - use livekit-server-sdk in production
-  return Buffer.from(JSON.stringify(tokenData)).toString('base64');
-}
 
 /**
  * Format duration in seconds to human readable string

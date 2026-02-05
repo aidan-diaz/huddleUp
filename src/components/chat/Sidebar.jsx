@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import ConversationList from './ConversationList';
@@ -21,8 +21,21 @@ export default function Sidebar({ isOpen, onToggle }) {
   const { signOut } = useAuthActions();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const isCalendarView = location.pathname === '/calendar';
+
+  // Handle URL-based modal triggers from WelcomeView buttons
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'new-chat') {
+      setShowSearch(true);
+      setSearchParams({}, { replace: true }); // Clear the param
+    } else if (action === 'new-group') {
+      setShowCreateGroup(true);
+      setSearchParams({}, { replace: true }); // Clear the param
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleSignOut = async () => {
     await signOut();

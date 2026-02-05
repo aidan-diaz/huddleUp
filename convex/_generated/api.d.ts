@@ -17,8 +17,10 @@ import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as livekit from "../livekit.js";
 import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
+import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 
 import type {
@@ -37,8 +39,10 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
+  livekit: typeof livekit;
   messages: typeof messages;
   notifications: typeof notifications;
+  seed: typeof seed;
   users: typeof users;
 }>;
 
