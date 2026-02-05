@@ -15,10 +15,7 @@ import {
   useLocalParticipant,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import {
-  BackgroundProcessor,
-  ProcessorWrapper,
-} from '@livekit/track-processors';
+import { BackgroundProcessor, supportsBackgroundProcessors } from '@livekit/track-processors';
 import PropTypes from 'prop-types';
 import '@livekit/components-styles';
 import './VideoRoom.css';
@@ -169,43 +166,72 @@ function VideoCallContent({ callType, roomName, onLeave }) {
 
   const [backgroundMode, setBackgroundMode] = useState('none');
   const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
-  const [isProcessorSupported, setIsProcessorSupported] = useState(true);
+  const [backgroundError, setBackgroundError] = useState(null);
   const processorRef = useRef(null);
+  const hasAppliedDefaultBlur = useRef(false);
 
-  // Initialize background processor
+  // Cleanup processor on unmount
   useEffect(() => {
-    if (callType !== 'video') return;
-
-    // Check if background processing is supported
-    const checkSupport = async () => {
-      try {
-        // Try to create a processor to check support
-        const testProcessor = new BackgroundProcessor({ mode: 'background-blur' });
-        setIsProcessorSupported(true);
-      } catch (err) {
-        console.warn('Background processing not supported:', err);
-        setIsProcessorSupported(false);
-      }
-    };
-    
-    checkSupport();
-
     return () => {
-      // Cleanup processor on unmount
       if (processorRef.current) {
         processorRef.current.destroy?.();
         processorRef.current = null;
       }
     };
-  }, [callType]);
+  }, []);
+
+  // Find local camera track from tracks array
+  const localCameraTrack = tracks.find(
+    (t) => t.participant?.identity === localParticipant?.identity && 
+           t.source === Track.Source.Camera &&
+           t.publication?.track
+  )?.publication?.track;
+
+  // Auto-apply blur by default when camera becomes available
+  useEffect(() => {
+    if (callType !== 'video' || hasAppliedDefaultBlur.current) return;
+    if (!supportsBackgroundProcessors()) return;
+    if (!localCameraTrack) return;
+    
+    hasAppliedDefaultBlur.current = true;
+    
+    // Apply blur in the background (don't block or show errors for auto-apply)
+    const applyDefaultBlur = async () => {
+      try {
+        const processor = BackgroundProcessor({
+          mode: 'background-blur',
+          blurRadius: 15,
+        });
+        await localCameraTrack.setProcessor(processor);
+        processorRef.current = processor;
+        setBackgroundMode('blur');
+        console.log('Auto-applied background blur');
+      } catch (err) {
+        console.warn('Failed to auto-apply background blur:', err);
+        // Silent fail for auto-apply - user can manually try from menu
+      }
+    };
+    
+    applyDefaultBlur();
+  }, [callType, localCameraTrack]);
 
   // Apply background effect
   const applyBackground = useCallback(async (background) => {
     if (!localParticipant || callType !== 'video') return;
 
-    const cameraTrack = localParticipant.getTrackPublication(Track.Source.Camera)?.track;
+    setBackgroundError(null);
+
+    // Check browser support first
+    if (!supportsBackgroundProcessors()) {
+      setBackgroundError('Virtual backgrounds are not supported in your browser. Try Chrome or Edge.');
+      return;
+    }
+
+    const cameraPublication = localParticipant.getTrackPublication(Track.Source.Camera);
+    const cameraTrack = cameraPublication?.track;
+    
     if (!cameraTrack) {
-      console.warn('No camera track available');
+      setBackgroundError('Please enable your camera first to use virtual backgrounds.');
       return;
     }
 
@@ -224,7 +250,8 @@ function VideoCallContent({ callType, roomName, onLeave }) {
       let processor;
       
       if (background === 'blur') {
-        processor = new BackgroundProcessor({
+        // BackgroundProcessor is a function, not a class
+        processor = BackgroundProcessor({
           mode: 'background-blur',
           blurRadius: 15,
         });
@@ -232,7 +259,7 @@ function VideoCallContent({ callType, roomName, onLeave }) {
         // Virtual background with image
         const bg = VIRTUAL_BACKGROUNDS.find(b => b.id === background);
         if (bg && bg.type === 'image') {
-          processor = new BackgroundProcessor({
+          processor = BackgroundProcessor({
             mode: 'virtual-background',
             imagePath: bg.url,
           });
@@ -246,7 +273,14 @@ function VideoCallContent({ callType, roomName, onLeave }) {
       }
     } catch (err) {
       console.error('Error applying background:', err);
-      // Reset state on error
+      // Provide user-friendly error message
+      if (err.message?.includes('WebGL') || err.message?.includes('GPU')) {
+        setBackgroundError('Virtual backgrounds require WebGL support. Please try a different browser.');
+      } else if (err.message?.includes('model') || err.message?.includes('load')) {
+        setBackgroundError('Failed to load background processor. Please check your internet connection.');
+      } else {
+        setBackgroundError(`Failed to apply background: ${err.message || 'Unknown error'}`);
+      }
       setBackgroundMode('none');
     }
   }, [localParticipant, callType]);
@@ -264,7 +298,7 @@ function VideoCallContent({ callType, roomName, onLeave }) {
         </span>
         
         {/* Background selector button - only for video calls */}
-        {callType === 'video' && isProcessorSupported && (
+        {callType === 'video' && (
           <div className="video-room__background-control">
             <button
               className={`video-room__bg-btn ${backgroundMode !== 'none' ? 'video-room__bg-btn--active' : ''}`}
@@ -276,6 +310,11 @@ function VideoCallContent({ callType, roomName, onLeave }) {
             
             {showBackgroundMenu && (
               <div className="video-room__bg-menu">
+                {backgroundError && (
+                  <div className="video-room__bg-error">
+                    {backgroundError}
+                  </div>
+                )}
                 <button
                   className={`video-room__bg-option ${backgroundMode === 'none' ? 'video-room__bg-option--selected' : ''}`}
                   onClick={() => handleBackgroundSelect('none')}
