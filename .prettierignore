@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+coverage/
+.convex/
+convex/_generated/
+*.min.js
+package-lock.json
