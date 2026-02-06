@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
@@ -50,6 +50,27 @@ export default function ScheduleMeetingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // Reset all fields whenever the modal is opened so the user gets a fresh form for each new request
+  useEffect(() => {
+    if (isOpen) {
+      setSuccess(false);
+      setError(null);
+      setSelectedUser(
+        initialRecipientId
+          ? { _id: initialRecipientId, name: initialRecipientName }
+          : null
+      );
+      setSearchTerm('');
+      setSelectedDate(new Date());
+      setFormData({
+        title: '',
+        description: '',
+        startTime: '09:00',
+        endTime: '10:00',
+      });
+    }
+  }, [isOpen, initialRecipientId, initialRecipientName]);
 
   // Queries
   const searchResults = useQuery(
