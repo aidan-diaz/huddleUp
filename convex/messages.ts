@@ -2,6 +2,7 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { paginationOptsValidator } from 'convex/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { internal } from './_generated/api';
 import { getCurrentTimestamp } from './lib/utils';
 import { messageTypeValidator } from './lib/validators';
 
@@ -83,6 +84,32 @@ export const sendMessage = mutation({
         lastMessageAt: now,
       });
 
+      // Notify the other participant (in-app + push)
+      const recipientId =
+        conversation.participant1Id === currentUser._id
+          ? conversation.participant2Id
+          : conversation.participant1Id;
+      const senderName = currentUser.name ?? currentUser.email ?? 'Someone';
+      const messagePreview =
+        messageType === 'file'
+          ? (args.fileName ?? 'Sent a file')
+          : args.content;
+      const pushTitle = `New message from ${senderName}`;
+      const pushUrl = `/conversation/${args.conversationId}`;
+
+      await ctx.scheduler.runAfter(0, internal.notifications.notifyNewMessage, {
+        recipientId,
+        senderName,
+        messagePreview,
+        conversationId: args.conversationId,
+      });
+      await ctx.scheduler.runAfter(0, internal.push.sendPushNotification, {
+        userId: recipientId,
+        title: pushTitle,
+        body: messagePreview.length > 100 ? messagePreview.slice(0, 97) + '...' : messagePreview,
+        url: pushUrl,
+      });
+
       return messageId;
     }
 
@@ -122,6 +149,40 @@ export const sendMessage = mutation({
       await ctx.db.patch(args.groupId, {
         lastMessageAt: now,
       });
+
+      // Notify all other group members (in-app + push)
+      const members = await ctx.db
+        .query('groupMembers')
+        .withIndex('by_group', (q) => q.eq('groupId', args.groupId!))
+        .collect();
+      const senderName = currentUser.name ?? currentUser.email ?? 'Someone';
+      const messagePreview =
+        messageType === 'file'
+          ? (args.fileName ?? 'Sent a file')
+          : args.content;
+      const pushTitle = `New message in ${group.name}`;
+      const pushUrl = `/group/${args.groupId}`;
+      const pushBody =
+        messagePreview.length > 100
+          ? messagePreview.slice(0, 97) + '...'
+          : messagePreview;
+
+      for (const member of members) {
+        if (member.userId === currentUser._id) continue;
+        await ctx.scheduler.runAfter(0, internal.notifications.notifyNewMessage, {
+          recipientId: member.userId,
+          senderName,
+          messagePreview,
+          groupId: args.groupId,
+          groupName: group.name,
+        });
+        await ctx.scheduler.runAfter(0, internal.push.sendPushNotification, {
+          userId: member.userId,
+          title: pushTitle,
+          body: pushBody,
+          url: pushUrl,
+        });
+      }
 
       return messageId;
     }

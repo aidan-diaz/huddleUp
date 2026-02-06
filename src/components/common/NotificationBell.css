@@ -35,11 +35,9 @@
 }
 
 .notification-bell__dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 320px;
-  max-height: 400px;
+  position: fixed;
+  /* top, left set via inline style from button position */
+  max-height: min(400px, calc(100vh - 80px));
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

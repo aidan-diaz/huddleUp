@@ -1,6 +1,12 @@
 import { v } from 'convex/values';
-import { mutation, query, action, internalMutation } from './_generated/server';
+import {
+  mutation,
+  query,
+  internalMutation,
+  internalQuery,
+} from './_generated/server';
 import { internal } from './_generated/api';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import { getCurrentTimestamp } from './lib/utils';
 import { notificationTypeValidator } from './lib/validators';
 
@@ -41,19 +47,11 @@ export const listNotifications = query({
     unreadOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
-    if (!user) {
-      return [];
-    }
+    const user = await ctx.db.get(userId);
+    if (!user) return [];
 
     const limit = args.limit ?? 50;
 
@@ -81,19 +79,11 @@ export const listNotifications = query({
 export const getUnreadCount = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return 0;
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return 0;
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
-    if (!user) {
-      return 0;
-    }
+    const user = await ctx.db.get(userId);
+    if (!user) return 0;
 
     const unreadNotifications = await ctx.db
       .query('notifications')
@@ -114,26 +104,17 @@ export const markAsRead = mutation({
     notificationId: v.id('notifications'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error('User not found');
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
       throw new Error('Notification not found');
     }
 
-    // Verify ownership
     if (notification.userId !== user._id) {
       throw new Error('Not authorized');
     }
@@ -152,19 +133,11 @@ export const markAsRead = mutation({
 export const markAllAsRead = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error('User not found');
 
     const unreadNotifications = await ctx.db
       .query('notifications')
@@ -191,19 +164,11 @@ export const deleteNotification = mutation({
     notificationId: v.id('notifications'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error('User not found');
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
@@ -229,21 +194,12 @@ export const savePushSubscription = mutation({
     auth: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error('User not found');
 
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Check if subscription already exists
     const existingSubscription = await ctx.db
       .query('pushSubscriptions')
       .withIndex('by_endpoint', (q) => q.eq('endpoint', args.endpoint))
@@ -280,17 +236,15 @@ export const removePushSubscription = mutation({
     endpoint: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
     const subscription = await ctx.db
       .query('pushSubscriptions')
       .withIndex('by_endpoint', (q) => q.eq('endpoint', args.endpoint))
       .first();
 
-    if (subscription) {
+    if (subscription && subscription.userId === userId) {
       await ctx.db.delete(subscription._id);
     }
 
@@ -299,51 +253,10 @@ export const removePushSubscription = mutation({
 });
 
 /**
- * Send push notification to user (action)
+ * Internal query – get push subscriptions for a user (backend only).
+ * Used by convex/push.ts sendPushNotification action.
  */
-export const sendPushNotification = action({
-  args: {
-    userId: v.id('users'),
-    title: v.string(),
-    body: v.string(),
-    url: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // Get user's push subscriptions
-    const subscriptions = await ctx.runQuery(
-      internal.notifications.getUserPushSubscriptions,
-      { userId: args.userId }
-    );
-
-    if (subscriptions.length === 0) {
-      return { sent: 0 };
-    }
-
-    // Get VAPID keys from environment
-    const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
-    const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
-
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      console.warn('VAPID keys not configured. Push notifications disabled.');
-      return { sent: 0 };
-    }
-
-    // In production, use web-push library to send notifications
-    // For now, we'll log and return
-    console.log(`Would send push notification to ${subscriptions.length} devices:`, {
-      title: args.title,
-      body: args.body,
-      url: args.url,
-    });
-
-    return { sent: subscriptions.length };
-  },
-});
-
-/**
- * Internal query to get user's push subscriptions
- */
-export const getUserPushSubscriptions = query({
+export const getUserPushSubscriptions = internalQuery({
   args: {
     userId: v.id('users'),
   },

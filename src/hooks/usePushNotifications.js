@@ -31,9 +31,11 @@ export function usePushNotifications() {
   const removePushSubscription = useMutation(api.notifications.removePushSubscription);
 
   /**
-   * Check current subscription status on mount
+   * Register service worker and check current subscription status on mount.
+   * SW must be registered before .ready resolves; otherwise the toggle stays disabled.
    */
   useEffect(() => {
+    let fallbackId;
     async function checkSubscription() {
       if (!isPushSupported()) {
         setIsSupported(false);
@@ -45,18 +47,24 @@ export function usePushNotifications() {
       setPermission(Notification.permission);
 
       try {
+        // Register service worker so .ready can resolve (required for push)
+        await navigator.serviceWorker.register('/sw.js', { scope: '/' });
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
         setIsSubscribed(!!subscription);
       } catch (err) {
         console.error('Error checking push subscription:', err);
-        setError(err.message);
+        setError(err.message || 'Push setup failed');
       } finally {
         setIsLoading(false);
+        if (fallbackId) clearTimeout(fallbackId);
       }
     }
 
     checkSubscription();
+    // Safety: ensure loading is cleared if something hangs (e.g. SW never ready)
+    fallbackId = setTimeout(() => setIsLoading(false), 5000);
+    return () => clearTimeout(fallbackId);
   }, []);
 
   /**
