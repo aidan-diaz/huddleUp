@@ -1,15 +1,35 @@
 .message-item {
   display: flex;
   align-items: flex-end;
-  gap: var(--spacing-sm);
   position: relative;
   padding-left: 44px; /* Space for avatar */
+  width: 100%;
 }
 
 .message-item--own {
-  flex-direction: row-reverse;
   padding-left: 0;
   padding-right: 0;
+}
+
+/* Single flex child: full-width wrapper controls left/right alignment */
+.message-item__main-wrap {
+  display: flex;
+  justify-content: flex-start; /* Received: left */
+  align-items: flex-end;
+  width: 100%;
+  min-width: 0;
+}
+
+.message-item--own .message-item__main-wrap {
+  justify-content: flex-end; /* User-sent: right – applies to all lengths */
+}
+
+/* Keep our bubble from growing; push it to the right even if flex alignment fails */
+.message-item--own .message-item__main {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .message-item--with-avatar {
@@ -38,8 +58,17 @@
   object-fit: cover;
 }
 
+/* Bubble container; actions are absolutely positioned so they don't affect bubble size on hover */
+.message-item__main {
+  position: relative;
+  display: inline-block; /* Only as wide as the bubble – no extra space for actions */
+  max-width: 100%; /* Don't overflow row */
+}
+
 .message-item__bubble {
-  max-width: 70%;
+  /* Fixed cap so bubble never grows with parent; 30rem = more width without bleeding into received side */
+  max-width: 30rem;
+  min-width: 6.5rem; /* Enough for words like "testing!" to stay on one line */
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-surface);
   border-radius: var(--radius-lg);
@@ -63,15 +92,18 @@
 }
 
 .message-item__text {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: normal; /* Prefer breaking at spaces, not mid-word */
   white-space: pre-wrap;
   line-height: 1.4;
+  min-width: 0;
 }
 
 .message-item__edited {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   margin-left: var(--spacing-xs);
+  white-space: nowrap; /* Keep "(edited)" on one line */
 }
 
 .message-item--own .message-item__edited {
@@ -84,47 +116,59 @@
   color: var(--color-text-muted);
   margin-top: var(--spacing-xs);
   text-align: right;
+  white-space: nowrap; /* Keep timestamp on one line (e.g. "11:13 AM") */
 }
 
 .message-item--own .message-item__time {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Actions */
+/* Actions – absolutely positioned beside bubble so hover doesn't change message size */
 .message-item__actions {
-  display: flex;
-  gap: var(--spacing-xs);
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
   background-color: var(--color-surface-elevated);
   border-radius: var(--radius-md);
   padding: var(--spacing-xs);
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  z-index: 1;
 }
 
+/* Own messages: actions to the left of the bubble */
 .message-item--own .message-item__actions {
-  left: -80px;
-  right: auto;
+  right: 100%;
+  margin-right: var(--spacing-sm);
 }
 
+/* Other users: actions to the right of the bubble */
 .message-item:not(.message-item--own) .message-item__actions {
-  right: -80px;
-  left: auto;
+  left: 100%;
+  margin-left: var(--spacing-sm);
 }
 
 .message-item__action {
   background: none;
   border: none;
   cursor: pointer;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   transition: background-color var(--transition-fast);
+  line-height: 1;
 }
 
 .message-item__action:hover {
   background-color: var(--color-surface);
+}
+
+.message-item__action[title="Delete"]:hover {
+  background-color: var(--color-error);
+  color: white;
 }
 
 /* Edit Mode */

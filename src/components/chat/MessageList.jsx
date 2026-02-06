@@ -76,6 +76,15 @@ export default function MessageList({ conversationId, groupId }) {
     );
   }
 
+  /* Wait for currentUser so "own" vs "received" alignment is correct (avoids all messages on left briefly) */
+  if (messages.length > 0 && !currentUser) {
+    return (
+      <div className="message-list__loading">
+        <MessageSkeleton count={5} />
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -117,7 +126,7 @@ export default function MessageList({ conversationId, groupId }) {
               <MessageItem
                 key={message._id}
                 message={message}
-                isOwnMessage={message.senderId === currentUser?._id}
+                isOwnMessage={!!currentUser && String(message.senderId) === String(currentUser._id)}
                 showAvatar={showAvatar}
               />
             );
