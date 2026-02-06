@@ -9,13 +9,18 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as calendar from "../calendar.js";
+import type * as calls from "../calls.js";
 import type * as conversations from "../conversations.js";
 import type * as files from "../files.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as livekit from "../livekit.js";
 import type * as messages from "../messages.js";
+import type * as notifications from "../notifications.js";
+import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 
 import type {
@@ -26,13 +31,18 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  calendar: typeof calendar;
+  calls: typeof calls;
   conversations: typeof conversations;
   files: typeof files;
   groups: typeof groups;
   http: typeof http;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
+  livekit: typeof livekit;
   messages: typeof messages;
+  notifications: typeof notifications;
+  seed: typeof seed;
   users: typeof users;
 }>;
 

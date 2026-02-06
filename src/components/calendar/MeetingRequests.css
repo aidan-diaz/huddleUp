@@ -1,0 +1,211 @@
+/* MeetingRequests Styles */
+.meeting-requests {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg);
+}
+
+.meeting-requests__tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.meeting-requests__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.meeting-requests__tab:hover {
+  background-color: var(--color-surface-elevated);
+}
+
+.meeting-requests__tab--active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.meeting-requests__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background-color: var(--color-error);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.meeting-requests__tab--active .meeting-requests__badge {
+  background-color: white;
+  color: var(--color-primary);
+}
+
+.meeting-requests__content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.meeting-requests__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-muted);
+}
+
+.meeting-requests__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Meeting Request Card */
+.meeting-request-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+}
+
+.meeting-request-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.meeting-request-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), #818cf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.meeting-request-card__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.meeting-request-card__avatar span {
+  color: white;
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+}
+
+.meeting-request-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.meeting-request-card__from {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.meeting-request-card__date {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.meeting-request-card__status {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+.meeting-request-card__status--pending {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.meeting-request-card__status--approved {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.meeting-request-card__status--denied {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.meeting-request-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text-primary);
+}
+
+.meeting-request-card__description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.5;
+}
+
+.meeting-request-card__time {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.meeting-request-card__response {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-background);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.meeting-request-card__response strong {
+  color: var(--color-text-primary);
+}
+
+.meeting-request-card__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .meeting-requests {
+    padding: var(--spacing-md);
+  }
+
+  .meeting-request-card__actions {
+    flex-direction: column;
+  }
+
+  .meeting-request-card__actions .btn {
+    width: 100%;
+  }
+}

@@ -1,4 +1,4 @@
-import { QueryCtx } from '../_generated/server';
+import { QueryCtx, MutationCtx } from '../_generated/server';
 
 /**
  * Get the current authenticated user or throw an error
@@ -88,4 +88,115 @@ export const PRESENCE_TIMEOUT = 60 * 1000;
  */
 export function isPresenceStale(lastHeartbeat: number): boolean {
   return Date.now() - lastHeartbeat > PRESENCE_TIMEOUT;
+}
+
+// ==========================================
+// Phase 8: Security Helpers
+// ==========================================
+
+/**
+ * Get current user from database by email
+ * Throws error if not authenticated or user not found
+ */
+export async function getCurrentUserOrThrow(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error('Not authenticated');
+  }
+
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_email', (q) => q.eq('email', identity.email!))
+    .first();
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user;
+}
+
+/**
+ * Verify user is a participant in a conversation
+ */
+export async function verifyConversationAccess(
+  ctx: QueryCtx | MutationCtx,
+  conversationId: string,
+  userId: string
+): Promise<void> {
+  const conversation = await ctx.db.get(conversationId as any);
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
+  if (
+    conversation.participant1Id !== userId &&
+    conversation.participant2Id !== userId
+  ) {
+    throw new Error('Not authorized to access this conversation');
+  }
+}
+
+/**
+ * Verify user is a member of a group and optionally check role
+ */
+export async function verifyGroupAccess(
+  ctx: QueryCtx | MutationCtx,
+  groupId: string,
+  userId: string,
+  requiredRole?: 'admin' | 'member'
+): Promise<{ role: 'admin' | 'member' }> {
+  const membership = await ctx.db
+    .query('groupMembers')
+    .withIndex('by_group_and_user', (q) =>
+      q.eq('groupId', groupId as any).eq('userId', userId as any)
+    )
+    .first();
+
+  if (!membership) {
+    throw new Error('Not a member of this group');
+  }
+
+  if (requiredRole === 'admin' && membership.role !== 'admin') {
+    throw new Error('Admin privileges required');
+  }
+
+  return { role: membership.role };
+}
+
+/**
+ * Check if a string contains potential XSS patterns
+ * Note: This is a basic check. Client-side sanitization is still needed.
+ */
+export function containsSuspiciousContent(content: string): boolean {
+  const suspiciousPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /data:/i,
+    /vbscript:/i,
+    /on\w+\s*=/i, // onclick=, onerror=, etc.
+    /<iframe/i,
+    /<object/i,
+    /<embed/i,
+    /<form/i,
+  ];
+
+  return suspiciousPatterns.some((pattern) => pattern.test(content));
+}
+
+/**
+ * Log suspicious activity for monitoring
+ * In production, this would send to a monitoring service
+ */
+export function logSuspiciousActivity(
+  action: string,
+  userId: string,
+  details: Record<string, unknown>
+): void {
+  console.warn('[Security Alert]', {
+    action,
+    userId,
+    details,
+    timestamp: new Date().toISOString(),
+  });
 }

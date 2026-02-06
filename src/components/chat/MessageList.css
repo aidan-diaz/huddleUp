@@ -1,0 +1,95 @@
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.message-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.message-list__loading,
+.message-list__loading-more {
+  padding: var(--spacing-md);
+}
+
+.message-list__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.message-list__empty-hint {
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.message-list__start {
+  text-align: center;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.message-list__start p {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.message-list__scroll-bottom {
+  position: sticky;
+  bottom: var(--spacing-md);
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.message-list__scroll-bottom:hover {
+  transform: scale(1.1);
+}
+
+.message-list__scroll-bottom:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbar */
+.message-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-secondary);
+}

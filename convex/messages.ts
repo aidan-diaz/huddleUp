@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { paginationOptsValidator } from 'convex/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import { getCurrentTimestamp } from './lib/utils';
 import { messageTypeValidator } from './lib/validators';
 
@@ -20,16 +21,13 @@ export const sendMessage = mutation({
     fileSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -142,16 +140,13 @@ export const listMessages = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -271,16 +266,13 @@ export const pinMessage = mutation({
     pin: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -360,16 +352,13 @@ export const getPinnedMessages = query({
     groupId: v.optional(v.id('groups')),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -467,16 +456,13 @@ export const deleteMessage = mutation({
     messageId: v.id('messages'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');
@@ -522,16 +508,13 @@ export const editMessage = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
     // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
+    const currentUser = await ctx.db.get(userId);
 
     if (!currentUser) {
       throw new Error('User not found');

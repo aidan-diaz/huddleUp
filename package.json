@@ -18,10 +18,13 @@
   "dependencies": {
     "@convex-dev/auth": "^0.0.74",
     "@livekit/components-react": "^2.6.8",
+    "@livekit/components-styles": "^1.2.0",
+    "@livekit/track-processors": "^0.7.0",
     "@tanstack/react-virtual": "^3.11.2",
     "convex": "^1.17.4",
     "date-fns": "^4.1.0",
     "livekit-client": "^2.7.1",
+    "livekit-server-sdk": "^2.15.0",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
