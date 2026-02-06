@@ -208,9 +208,17 @@
   border-radius: var(--radius-lg);
 }
 
+.message-item--own.message-item--deleted .message-item__content {
+  background-color: var(--color-primary);
+}
+
 .message-item__deleted-text {
   font-style: italic;
   color: var(--color-text-muted);
+}
+
+.message-item--own .message-item__deleted-text {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* System Message */

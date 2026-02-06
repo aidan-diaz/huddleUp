@@ -59,12 +59,22 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
     }
   };
 
-  // Render deleted message
+  // Render deleted message (use same alignment as regular messages so our deletions stay on the right)
   if (message.isDeleted) {
     return (
       <div className={`message-item message-item--deleted ${isOwnMessage ? 'message-item--own' : ''}`}>
-        <div className="message-item__content">
-          <span className="message-item__deleted-text">Message deleted</span>
+        <div
+          className="message-item__main-wrap"
+          style={isOwnMessage ? { display: 'flex', justifyContent: 'flex-end', width: '100%' } : undefined}
+        >
+          <div
+            className="message-item__main"
+            style={isOwnMessage ? { marginLeft: 'auto', width: 'fit-content', maxWidth: 'min(100%, 30rem)' } : undefined}
+          >
+            <div className="message-item__content">
+              <span className="message-item__deleted-text">Message deleted</span>
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -110,6 +110,11 @@ export default function MessageInput({ conversationId, groupId }) {
           });
           setContent('');
         }
+        // Reset textarea height after sending so it matches page-load size (clear inline height)
+        const ta = textareaRef.current;
+        if (ta) {
+          ta.style.height = '';
+        }
         textareaRef.current?.focus();
       } catch (err) {
         setError(err.message || 'Failed to send');
