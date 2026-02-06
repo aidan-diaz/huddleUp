@@ -47,6 +47,7 @@ coverage/
 
 # Convex
 .convex/
+convex/_generated/
 
 # Debug
 debug/
