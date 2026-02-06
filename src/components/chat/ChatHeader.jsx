@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import UserPresence from '../common/UserPresence';
 import { useCall } from '../../hooks/useCall';
+import { ScheduleMeetingModal } from '../calendar';
 import './ChatHeader.css';
 
 export default function ChatHeader({
@@ -12,10 +13,12 @@ export default function ChatHeader({
   presenceStatus,
   conversationId,
   groupId,
+  otherUserId,
   onShowDetails,
 }) {
   const { startCall, isInCall } = useCall();
   const [isStartingCall, setIsStartingCall] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const handleStartCall = async (callType) => {
     if (isInCall || isStartingCall) return;
@@ -62,6 +65,16 @@ export default function ChatHeader({
       </div>
 
       <div className="chat-header__actions">
+        {type === 'conversation' && otherUserId && (
+          <button
+            className="chat-header__action"
+            title="Schedule meeting"
+            aria-label="Schedule meeting"
+            onClick={() => setShowScheduleModal(true)}
+          >
+            📅
+          </button>
+        )}
         <button
           className="chat-header__action"
           title="Start audio call"
@@ -89,6 +102,15 @@ export default function ChatHeader({
           ℹ️
         </button>
       </div>
+
+      {type === 'conversation' && otherUserId && (
+        <ScheduleMeetingModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          recipientId={otherUserId}
+          recipientName={title}
+        />
+      )}
     </header>
   );
 }
@@ -101,5 +123,6 @@ ChatHeader.propTypes = {
   presenceStatus: PropTypes.oneOf(['active', 'away', 'busy', 'inCall', 'offline']),
   conversationId: PropTypes.string,
   groupId: PropTypes.string,
+  otherUserId: PropTypes.string,
   onShowDetails: PropTypes.func.isRequired,
 };

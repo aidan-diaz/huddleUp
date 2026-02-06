@@ -17,6 +17,7 @@ import {
 import EventModal from './EventModal';
 import EventList from './EventList';
 import MeetingRequests from './MeetingRequests';
+import ScheduleMeetingModal from './ScheduleMeetingModal';
 import './CalendarView.css';
 
 /**
@@ -28,6 +29,7 @@ export default function CalendarView() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [view, setView] = useState('calendar'); // 'calendar' | 'requests'
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Calculate date range for current view (padded to include full weeks)
   const viewStart = startOfWeek(startOfMonth(currentMonth));
@@ -113,6 +115,12 @@ export default function CalendarView() {
             </button>
           </div>
         </div>
+        <button
+          className="btn btn--primary calendar-view__schedule-btn"
+          onClick={() => setShowScheduleModal(true)}
+        >
+          📅 Schedule Meeting
+        </button>
       </div>
 
       {view === 'calendar' ? (
@@ -228,6 +236,11 @@ export default function CalendarView() {
           onClose={handleCloseModal}
         />
       )}
+
+      <ScheduleMeetingModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+      />
     </div>
   );
 }

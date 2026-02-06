@@ -9,6 +9,17 @@
 .calendar-view__header {
   padding: var(--spacing-lg);
   border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.calendar-view__schedule-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .calendar-view__nav {

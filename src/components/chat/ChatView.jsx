@@ -81,6 +81,7 @@ export default function ChatView({ type }) {
         }
         conversationId={type === 'conversation' ? conversationId : undefined}
         groupId={type === 'group' ? groupId : undefined}
+        otherUserId={type === 'conversation' ? conversation?.otherUser?._id : undefined}
         onShowDetails={() => setShowDetails(!showDetails)}
       />
 
