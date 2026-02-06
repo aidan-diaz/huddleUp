@@ -26,9 +26,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
-  const data = event.data.json();
+  let data;
+  try {
+    data = event.data.json();
+  } catch (e) {
+    console.error('[SW] Push payload parse error', e);
+    return;
+  }
+
   const options = {
-    body: data.body,
+    body: data.body || '',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     vibrate: [100, 50, 100],
@@ -36,9 +43,18 @@ self.addEventListener('push', (event) => {
       url: data.url || '/',
     },
     actions: data.actions || [],
+    // Unique tag so each notification shows; renotify so it pops up even if one exists
+    tag: data.tag || 'huddleup-' + Date.now(),
+    renotify: true,
+    requireInteraction: false,
+    ...(data.sound && { sound: data.sound }),
   };
 
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  event.waitUntil(
+    self.registration
+      .showNotification(data.title || 'HuddleUp', options)
+      .catch((err) => console.error('[SW] showNotification failed', err))
+  );
 });
 
 // Notification click event

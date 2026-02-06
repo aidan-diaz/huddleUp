@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    // Listen on all interfaces so you can open the app from another device on the same network
+    host: true,
   },
   build: {
     outDir: 'dist',
