@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import UserPresence from '../common/UserPresence';
-import { useCall } from '../../hooks/useCall';
+import { useCall } from '../../hooks/useCall.jsx';
 import { ScheduleMeetingModal } from '../calendar';
 import './ChatHeader.css';
 

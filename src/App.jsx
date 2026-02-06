@@ -5,7 +5,7 @@ import ChatLayout from './components/chat/ChatLayout';
 import ErrorBoundary from './components/errors/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import { usePresence } from './hooks/useAuth';
-import { CallProvider, useCall } from './hooks/useCall';
+import { CallProvider, useCall } from './hooks/useCall.jsx';
 import { VideoRoom, IncomingCallModal } from './components/calls';
 
 function App() {

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import { sanitizeInput } from '../../utils/sanitize';
@@ -7,6 +7,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import './MessageInput.css';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+// Must match convex/lib/utils.ts ALLOWED_FILE_TYPES
 const ALLOWED_FILE_TYPES = [
   'image/jpeg',
   'image/png',
@@ -15,16 +16,37 @@ const ALLOWED_FILE_TYPES = [
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'text/plain',
+  'application/zip',
 ];
+
+// Normalize route params: only pass non-empty IDs so Convex never receives ""
+function normalizeId(value) {
+  const s = value != null ? String(value).trim() : '';
+  return s || undefined;
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), 2);
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
 
 export default function MessageInput({ conversationId, groupId }) {
   const [content, setContent] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const convId = normalizeId(conversationId);
+  const grpId = normalizeId(groupId);
 
   const sendMessage = useMutation(api.messages.sendMessage);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
@@ -34,25 +56,69 @@ export default function MessageInput({ conversationId, groupId }) {
     async (e) => {
       e?.preventDefault();
       const trimmedContent = sanitizeInput(content.trim());
+      const hasText = trimmedContent.length > 0;
+      const hasFile = pendingFile != null;
 
-      if (!trimmedContent) return;
-      if (!conversationId && !groupId) return;
+      if (!hasText && !hasFile) return;
+      if (!convId && !grpId) return;
+
+      setError('');
 
       try {
-        setError('');
-        await sendMessage({
-          content: trimmedContent,
-          conversationId,
-          groupId,
-          type: 'text',
-        });
-        setContent('');
+        if (hasFile) {
+          setIsUploading(true);
+          setUploadProgress(0);
+
+          const file = pendingFile;
+          const uploadUrl = await generateUploadUrl();
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': file.type },
+            body: file,
+          });
+
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Upload failed');
+          }
+
+          const data = await response.json();
+          const storageId = data?.storageId;
+          if (!storageId) {
+            throw new Error('Invalid upload response — please try again.');
+          }
+
+          await saveFileMessage({
+            storageId,
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            content: hasText ? trimmedContent : undefined,
+            conversationId: convId,
+            groupId: grpId,
+          });
+
+          setPendingFile(null);
+          setContent('');
+          setUploadProgress(100);
+        } else {
+          await sendMessage({
+            content: trimmedContent,
+            conversationId: convId,
+            groupId: grpId,
+            type: 'text',
+          });
+          setContent('');
+        }
         textareaRef.current?.focus();
       } catch (err) {
-        setError(err.message || 'Failed to send message');
+        setError(err.message || 'Failed to send');
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
       }
     },
-    [content, conversationId, groupId, sendMessage]
+    [content, pendingFile, convId, grpId, sendMessage, generateUploadUrl, saveFileMessage]
   );
 
   const handleKeyDown = (e) => {
@@ -62,66 +128,30 @@ export default function MessageInput({ conversationId, groupId }) {
     }
   };
 
-  const handleFileSelect = useCallback(
-    async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const handleFileSelect = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      // Reset input
-      e.target.value = '';
+    e.target.value = '';
 
-      // Validate file
-      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        setError('File type not supported. Please upload images, PDFs, or documents.');
-        return;
-      }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      setError('File type not supported. Allowed: images, PDF, Word, Excel, text, or ZIP.');
+      return;
+    }
 
-      if (file.size > MAX_FILE_SIZE) {
-        setError('File is too large. Maximum size is 20MB.');
-        return;
-      }
+    if (file.size > MAX_FILE_SIZE) {
+      setError('File is too large. Maximum size is 20MB.');
+      return;
+    }
 
-      setIsUploading(true);
-      setUploadProgress(0);
-      setError('');
+    setError('');
+    setPendingFile(file);
+  }, []);
 
-      try {
-        // Get upload URL
-        const uploadUrl = await generateUploadUrl();
-
-        // Upload file
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        });
-
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-
-        const { storageId } = await response.json();
-
-        // Save file message
-        await saveFileMessage({
-          storageId,
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-          conversationId,
-          groupId,
-        });
-
-        setUploadProgress(100);
-      } catch (err) {
-        setError(err.message || 'Failed to upload file');
-      } finally {
-        setIsUploading(false);
-        setUploadProgress(0);
-      }
-    },
-    [conversationId, groupId, generateUploadUrl, saveFileMessage]
-  );
+  const removePendingFile = useCallback(() => {
+    setPendingFile(null);
+    fileInputRef.current?.value && (fileInputRef.current.value = '');
+  }, []);
 
   const handleTextareaChange = (e) => {
     setContent(e.target.value);
@@ -133,7 +163,8 @@ export default function MessageInput({ conversationId, groupId }) {
     }
   };
 
-  const isDisabled = !conversationId && !groupId;
+  const isDisabled = !convId && !grpId;
+  const canSend = (content.trim() || pendingFile) && !isUploading;
 
   return (
     <form className="message-input" onSubmit={handleSubmit}>
@@ -155,6 +186,26 @@ export default function MessageInput({ conversationId, groupId }) {
         <div className="message-input__upload-progress">
           <LoadingSpinner size="small" />
           <span>Uploading file...</span>
+        </div>
+      )}
+
+      {pendingFile && !isUploading && (
+        <div className="message-input__draft-attachment">
+          <span className="message-input__draft-attachment-icon">📎</span>
+          <span className="message-input__draft-attachment-name" title={pendingFile.name}>
+            {pendingFile.name}
+          </span>
+          <span className="message-input__draft-attachment-size">
+            {formatFileSize(pendingFile.size)}
+          </span>
+          <button
+            type="button"
+            className="message-input__draft-attachment-remove"
+            onClick={removePendingFile}
+            aria-label="Remove attachment"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -183,7 +234,13 @@ export default function MessageInput({ conversationId, groupId }) {
           value={content}
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
-          placeholder={isDisabled ? 'Select a conversation' : 'Type a message...'}
+          placeholder={
+            isDisabled
+              ? 'Select a conversation'
+              : pendingFile
+                ? 'Add a message (optional)...'
+                : 'Type a message...'
+          }
           disabled={isDisabled || isUploading}
           rows={1}
           aria-label="Message input"
@@ -192,7 +249,7 @@ export default function MessageInput({ conversationId, groupId }) {
         <button
           type="submit"
           className="message-input__send"
-          disabled={isDisabled || !content.trim() || isUploading}
+          disabled={isDisabled || !canSend}
           aria-label="Send message"
         >
           <span aria-hidden="true">→</span>

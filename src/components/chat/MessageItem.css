@@ -269,3 +269,16 @@
 .message-item__file-download:hover {
   opacity: 0.9;
 }
+
+.message-item__file-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.message-item__file-caption {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}

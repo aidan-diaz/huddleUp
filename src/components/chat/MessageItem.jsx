@@ -136,12 +136,17 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
         ) : (
           <>
             {message.type === 'file' ? (
-              <FileAttachment
-                fileName={message.fileName}
-                fileType={message.fileType}
-                fileSize={message.fileSize}
-                fileUrl={fileUrl}
-              />
+              <div className="message-item__file-wrapper">
+                <FileAttachment
+                  fileName={message.fileName}
+                  fileType={message.fileType}
+                  fileSize={message.fileSize}
+                  fileUrl={fileUrl}
+                />
+                {message.content && message.content !== message.fileName && (
+                  <p className="message-item__file-caption">{sanitizeText(message.content)}</p>
+                )}
+              </div>
             ) : (
               <p className="message-item__text">
                 {sanitizeText(message.content)}
