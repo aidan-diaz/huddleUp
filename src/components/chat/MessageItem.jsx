@@ -103,93 +103,104 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
         </div>
       )}
 
-      <div className="message-item__bubble">
-        {!isOwnMessage && showAvatar && (
-          <span className="message-item__sender">
-            {message.sender?.name || message.sender?.email || 'Unknown'}
-          </span>
-        )}
-
-        {isEditing ? (
-          <div className="message-item__edit">
-            <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-            />
-            <div className="message-item__edit-actions">
-              <button
-                className="btn btn--secondary btn--small"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditContent(message.content);
-                }}
-              >
-                Cancel
-              </button>
-              <button className="btn btn--primary btn--small" onClick={handleEdit}>
-                Save
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {message.type === 'file' ? (
-              <div className="message-item__file-wrapper">
-                <FileAttachment
-                  fileName={message.fileName}
-                  fileType={message.fileType}
-                  fileSize={message.fileSize}
-                  fileUrl={fileUrl}
-                />
-                {message.content && message.content !== message.fileName && (
-                  <p className="message-item__file-caption">{sanitizeText(message.content)}</p>
-                )}
-              </div>
-            ) : (
-              <p className="message-item__text">
-                {sanitizeText(message.content)}
-                {message.updatedAt && (
-                  <span className="message-item__edited">(edited)</span>
-                )}
-              </p>
-            )}
-          </>
-        )}
-
-        <span className="message-item__time" title={formatRelativeTime(message.createdAt)}>
-          {formatMessageTime(message.createdAt)}
-        </span>
-      </div>
-
-      {showActions && !isEditing && isOwnMessage && (
-        <div className="message-item__actions">
-          {message.type === 'text' && (
-            <button
-              className="message-item__action"
-              onClick={() => setIsEditing(true)}
-              title="Edit"
-            >
-              ✏️
-            </button>
+      {/* Wrapper: use inline style for alignment so it always applies when isOwnMessage */}
+      <div
+        className="message-item__main-wrap"
+        style={isOwnMessage ? { display: 'flex', justifyContent: 'flex-end', width: '100%' } : undefined}
+      >
+      <div
+        className="message-item__main"
+        style={isOwnMessage ? { marginLeft: 'auto', width: 'fit-content', maxWidth: 'min(100%, 30rem)' } : undefined}
+      >
+        <div className="message-item__bubble">
+          {!isOwnMessage && showAvatar && (
+            <span className="message-item__sender">
+              {message.sender?.name || message.sender?.email || 'Unknown'}
+            </span>
           )}
-          <button className="message-item__action" onClick={handlePin} title="Pin">
-            📌
-          </button>
-          <button className="message-item__action" onClick={handleDelete} title="Delete">
-            🗑️
-          </button>
-        </div>
-      )}
 
-      {showActions && !isEditing && !isOwnMessage && (
-        <div className="message-item__actions">
-          <button className="message-item__action" onClick={handlePin} title="Pin">
-            📌
-          </button>
+          {isEditing ? (
+            <div className="message-item__edit">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+              />
+              <div className="message-item__edit-actions">
+                <button
+                  className="btn btn--secondary btn--small"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditContent(message.content);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button className="btn btn--primary btn--small" onClick={handleEdit}>
+                  Save
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {message.type === 'file' ? (
+                <div className="message-item__file-wrapper">
+                  <FileAttachment
+                    fileName={message.fileName}
+                    fileType={message.fileType}
+                    fileSize={message.fileSize}
+                    fileUrl={fileUrl}
+                  />
+                  {message.content && message.content !== message.fileName && (
+                    <p className="message-item__file-caption">{sanitizeText(message.content)}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="message-item__text">
+                  {sanitizeText(message.content)}
+                  {message.updatedAt && (
+                    <span className="message-item__edited">(edited)</span>
+                  )}
+                </p>
+              )}
+            </>
+          )}
+
+          <span className="message-item__time" title={formatRelativeTime(message.createdAt)}>
+            {formatMessageTime(message.createdAt)}
+          </span>
         </div>
-      )}
+
+        {showActions && !isEditing && isOwnMessage && (
+          <div className="message-item__actions">
+            {message.type === 'text' && (
+              <button
+                className="message-item__action"
+                onClick={() => setIsEditing(true)}
+                title="Edit"
+              >
+                ✏️
+              </button>
+            )}
+            <button className="message-item__action" onClick={handlePin} title="Pin">
+              📌
+            </button>
+            <button className="message-item__action" onClick={handleDelete} title="Delete">
+              🗑️
+            </button>
+          </div>
+        )}
+
+        {showActions && !isEditing && !isOwnMessage && (
+          <div className="message-item__actions">
+            <button className="message-item__action" onClick={handlePin} title="Pin">
+              📌
+            </button>
+          </div>
+        )}
+      </div>
+      </div>
     </div>
   );
 }

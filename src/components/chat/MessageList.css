@@ -1,6 +1,6 @@
 .message-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll; /* Always show scrollbar track so width doesn't jump when scrolling */
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
