@@ -132,6 +132,58 @@
   color: var(--color-text-secondary);
 }
 
+/* Draft attachment (file in message bar before send) */
+.message-input__draft-attachment {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.message-input__draft-attachment-icon {
+  font-size: var(--font-size-lg);
+}
+
+.message-input__draft-attachment-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+}
+
+.message-input__draft-attachment-size {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.message-input__draft-attachment-remove {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.message-input__draft-attachment-remove:hover {
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .message-input {

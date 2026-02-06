@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 import {
   ALLOWED_FILE_TYPES,
   MAX_FILE_SIZE,
@@ -13,8 +14,8 @@ import {
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
@@ -67,21 +68,17 @@ export const saveFileMessage = mutation({
     fileName: v.string(),
     fileType: v.string(),
     fileSize: v.number(),
+    content: v.optional(v.string()), // optional caption/message with the file
     conversationId: v.optional(v.id('directConversations')),
     groupId: v.optional(v.id('groups')),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const currentUser = await ctx.db.get(userId);
     if (!currentUser) {
       throw new Error('User not found');
     }
@@ -119,9 +116,14 @@ export const saveFileMessage = mutation({
         throw new Error('Not authorized');
       }
 
+      const messageContent =
+        args.content != null && args.content.trim() !== ''
+          ? args.content.trim()
+          : args.fileName;
+
       const messageId = await ctx.db.insert('messages', {
         senderId: currentUser._id,
-        content: args.fileName,
+        content: messageContent,
         conversationId: args.conversationId,
         type: 'file',
         fileId: args.storageId,
@@ -151,9 +153,14 @@ export const saveFileMessage = mutation({
         throw new Error('Not a member of this group');
       }
 
+      const messageContent =
+        args.content != null && args.content.trim() !== ''
+          ? args.content.trim()
+          : args.fileName;
+
       const messageId = await ctx.db.insert('messages', {
         senderId: currentUser._id,
-        content: args.fileName,
+        content: messageContent,
         groupId: args.groupId,
         type: 'file',
         fileId: args.storageId,
@@ -196,17 +203,12 @@ export const deleteFile = mutation({
     messageId: v.id('messages'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const currentUser = await ctx.db.get(userId);
     if (!currentUser) {
       throw new Error('User not found');
     }
@@ -250,17 +252,12 @@ export const getFileInfo = query({
     messageId: v.id('messages'),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error('Not authenticated');
     }
 
-    // Get current user
-    const currentUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', identity.email!))
-      .first();
-
+    const currentUser = await ctx.db.get(userId);
     if (!currentUser) {
       throw new Error('User not found');
     }
