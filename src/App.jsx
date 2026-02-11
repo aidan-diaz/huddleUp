@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useConvexAuth } from 'convex/react';
+import { Authenticated, Unauthenticated, AuthLoading } from 'convex/react';
 import AuthForm from './components/auth/AuthForm';
 import ChatLayout from './components/chat/ChatLayout';
 import ErrorBoundary from './components/errors/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
-import { usePresence } from './hooks/useAuth';
+import { usePresence, useEnsureUser } from './hooks/useAuth';
 import { CallProvider, useCall } from './hooks/useCall.jsx';
 import { VideoRoom, IncomingCallModal } from './components/calls';
 
@@ -19,21 +19,24 @@ function App() {
 }
 
 /**
- * Main content component that handles auth state
+ * Main content component that handles auth state.
+ * Uses Convex's Authenticated/Unauthenticated/AuthLoading so Convex
+ * has validated the Clerk token before rendering authenticated content.
  */
 function MainContent() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  
-  // Show loading while checking auth
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-  
-  if (!isAuthenticated) {
-    return <AuthForm />;
-  }
-  
-  return <AuthenticatedApp />;
+  return (
+    <>
+      <AuthLoading>
+        <LoadingScreen />
+      </AuthLoading>
+      <Unauthenticated>
+        <AuthForm />
+      </Unauthenticated>
+      <Authenticated>
+        <AuthenticatedApp />
+      </Authenticated>
+    </>
+  );
 }
 
 /**
@@ -41,6 +44,8 @@ function MainContent() {
  * Handles presence tracking and call management
  */
 function AuthenticatedApp() {
+  // Ensure Convex user profile exists (creates from Clerk identity on first login)
+  useEnsureUser();
   // Initialize presence tracking (sends heartbeat, handles visibility changes)
   usePresence();
   

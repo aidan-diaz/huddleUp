@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId } from './lib/auth';
 import {
   ALLOWED_FILE_TYPES,
   MAX_FILE_SIZE,

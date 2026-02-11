@@ -257,6 +257,7 @@ function getNotificationIcon(type) {
       return '📞';
     case 'meeting_request':
     case 'meeting_response':
+    case 'meeting_update_request':
       return '📅';
     case 'group_invite':
       return '👥';

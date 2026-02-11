@@ -6,18 +6,21 @@ import PropTypes from 'prop-types';
 import './MeetingRequests.css';
 
 /**
- * MeetingRequests - Shows incoming and outgoing meeting requests
+ * MeetingRequests - Shows incoming and outgoing meeting requests, and pending meeting update requests
  */
 export default function MeetingRequests() {
   const [activeTab, setActiveTab] = useState('incoming');
-  
+
   const pendingRequests = useQuery(api.calendar.listPendingRequests);
   const sentRequests = useQuery(api.calendar.listSentRequests, {});
-  
+  const pendingUpdateRequests = useQuery(api.calendar.listPendingMeetingUpdateRequests);
+
   const respondToRequest = useMutation(api.calendar.respondToRequest);
   const cancelRequest = useMutation(api.calendar.cancelRequest);
-  
+  const respondToMeetingUpdate = useMutation(api.calendar.respondToMeetingUpdate);
+
   const [respondingId, setRespondingId] = useState(null);
+  const [respondingUpdateId, setRespondingUpdateId] = useState(null);
 
   const handleRespond = async (requestId, status) => {
     try {
@@ -32,11 +35,22 @@ export default function MeetingRequests() {
 
   const handleCancel = async (requestId) => {
     if (!confirm('Cancel this meeting request?')) return;
-    
+
     try {
       await cancelRequest({ requestId });
     } catch (error) {
       console.error('Error canceling request:', error);
+    }
+  };
+
+  const handleRespondToUpdate = async (updateRequestId, status) => {
+    try {
+      setRespondingUpdateId(updateRequestId);
+      await respondToMeetingUpdate({ updateRequestId, status });
+    } catch (error) {
+      console.error('Error responding to update:', error);
+    } finally {
+      setRespondingUpdateId(null);
     }
   };
 
@@ -58,19 +72,36 @@ export default function MeetingRequests() {
         >
           Sent
         </button>
+        <button
+          className={`meeting-requests__tab ${activeTab === 'updates' ? 'meeting-requests__tab--active' : ''}`}
+          onClick={() => setActiveTab('updates')}
+        >
+          Meeting updates
+          {pendingUpdateRequests && pendingUpdateRequests.length > 0 && (
+            <span className="meeting-requests__badge">{pendingUpdateRequests.length}</span>
+          )}
+        </button>
       </div>
 
       <div className="meeting-requests__content">
-        {activeTab === 'incoming' ? (
+        {activeTab === 'incoming' && (
           <IncomingRequests
             requests={pendingRequests || []}
             onRespond={handleRespond}
             respondingId={respondingId}
           />
-        ) : (
+        )}
+        {activeTab === 'outgoing' && (
           <OutgoingRequests
             requests={sentRequests || []}
             onCancel={handleCancel}
+          />
+        )}
+        {activeTab === 'updates' && (
+          <MeetingUpdateRequests
+            updateRequests={pendingUpdateRequests || []}
+            onRespond={handleRespondToUpdate}
+            respondingId={respondingUpdateId}
           />
         )}
       </div>
@@ -240,4 +271,89 @@ function OutgoingRequests({ requests, onCancel }) {
 OutgoingRequests.propTypes = {
   requests: PropTypes.array.isRequired,
   onCancel: PropTypes.func.isRequired,
+};
+
+/**
+ * MeetingUpdateRequests - Pending meeting change requests that need the current user's approval
+ */
+function MeetingUpdateRequests({ updateRequests, onRespond, respondingId }) {
+  if (updateRequests.length === 0) {
+    return (
+      <div className="meeting-requests__empty">
+        <p>No pending meeting update requests</p>
+        <p className="meeting-requests__empty-hint">
+          When someone tries to change a meeting you share, their request will appear here.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="meeting-requests__list">
+      {updateRequests.map((ur) => (
+        <div key={ur._id} className="meeting-request-card meeting-request-card--update">
+          <div className="meeting-request-card__header">
+            <div className="meeting-request-card__avatar">
+              {ur.requester?.avatarUrl ? (
+                <img src={ur.requester.avatarUrl} alt="" />
+              ) : (
+                <span>{ur.requester?.name?.[0] || '?'}</span>
+              )}
+            </div>
+            <div className="meeting-request-card__info">
+              <span className="meeting-request-card__from">
+                {ur.requester?.name || ur.requester?.email || 'Unknown'} wants to update
+              </span>
+              <span className="meeting-request-card__date">
+                {format(new Date(ur.createdAt), 'MMM d, yyyy')}
+              </span>
+            </div>
+          </div>
+
+          <h3 className="meeting-request-card__title">{ur.proposedTitle}</h3>
+
+          {ur.proposedDescription && (
+            <p className="meeting-request-card__description">{ur.proposedDescription}</p>
+          )}
+
+          <div className="meeting-request-card__time">
+            <span>📅</span>
+            <span>
+              {format(new Date(ur.proposedStartTime), 'EEEE, MMMM d, yyyy')}
+            </span>
+          </div>
+          <div className="meeting-request-card__time">
+            <span>🕒</span>
+            <span>
+              {format(new Date(ur.proposedStartTime), 'h:mm a')} -{' '}
+              {format(new Date(ur.proposedEndTime), 'h:mm a')}
+            </span>
+          </div>
+
+          <div className="meeting-request-card__actions">
+            <button
+              className="btn btn--secondary"
+              onClick={() => onRespond(ur._id, 'denied')}
+              disabled={respondingId === ur._id}
+            >
+              Decline
+            </button>
+            <button
+              className="btn btn--primary"
+              onClick={() => onRespond(ur._id, 'approved')}
+              disabled={respondingId === ur._id}
+            >
+              {respondingId === ur._id ? 'Processing...' : 'Accept'}
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+MeetingUpdateRequests.propTypes = {
+  updateRequests: PropTypes.array.isRequired,
+  onRespond: PropTypes.func.isRequired,
+  respondingId: PropTypes.string,
 };

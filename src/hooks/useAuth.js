@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
-import { useQuery, useMutation, useConvexAuth } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useQuery, useMutation } from 'convex/react';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { api } from '../../convex/_generated/api';
 
 /**
@@ -8,13 +8,12 @@ import { api } from '../../convex/_generated/api';
  * Provides user data, auth status, and auth actions
  */
 export function useAuth() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  const { isSignedIn, isLoaded, signOut } = useClerkAuth();
   const currentUser = useQuery(api.users.getCurrentUser);
 
   return {
-    isAuthenticated,
-    isLoading,
+    isAuthenticated: isSignedIn,
+    isLoading: !isLoaded,
     user: currentUser,
     signOut,
   };
@@ -25,7 +24,8 @@ export function useAuth() {
  * Automatically sends heartbeats and manages user presence status
  */
 export function usePresence() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isSignedIn } = useClerkAuth();
+  const isAuthenticated = isSignedIn;
   const sendHeartbeat = useMutation(api.users.sendHeartbeat);
   const updatePresenceStatus = useMutation(api.users.updatePresenceStatus);
 
@@ -89,7 +89,9 @@ export function usePresence() {
  * Returns authentication state for route guards
  */
 export function useRequireAuth() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { isSignedIn, isLoaded } = useClerkAuth();
+  const isAuthenticated = isSignedIn;
+  const isLoading = !isLoaded;
 
   return {
     isAuthenticated,
@@ -102,33 +104,25 @@ export function useRequireAuth() {
 }
 
 /**
- * Custom hook for ensuring user profile exists
- * Creates or updates user profile after authentication
+ * Custom hook for ensuring user profile exists in Convex
+ * Creates user from Clerk identity on first login
  */
 export function useEnsureUser() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isSignedIn } = useClerkAuth();
   const currentUser = useQuery(api.users.getCurrentUser);
-  const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
+  const ensureUserExists = useMutation(api.users.ensureUserExists);
 
   useEffect(() => {
-    async function ensureUser() {
-      if (!isAuthenticated || currentUser !== undefined) return;
+    if (!isSignedIn) return;
+    // Only create user when we know they don't exist (null), not while loading (undefined)
+    if (currentUser !== null) return;
 
-      try {
-        // Get identity from Convex auth
-        // The user creation is handled by Convex Auth callbacks
-        // This hook is mainly for monitoring
-      } catch (error) {
-        console.error('Failed to ensure user:', error);
-      }
-    }
-
-    ensureUser();
-  }, [isAuthenticated, currentUser, createOrUpdateUser]);
+    ensureUserExists().catch(console.error);
+  }, [isSignedIn, currentUser, ensureUserExists]);
 
   return {
     user: currentUser,
-    isLoading: currentUser === undefined && isAuthenticated,
+    isLoading: currentUser === undefined && isSignedIn,
   };
 }
 

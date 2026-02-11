@@ -47,6 +47,7 @@ export const notificationTypeValidator = v.union(
   v.literal('call'),
   v.literal('meeting_request'),
   v.literal('meeting_response'),
+  v.literal('meeting_update_request'),
   v.literal('group_invite')
 );
 

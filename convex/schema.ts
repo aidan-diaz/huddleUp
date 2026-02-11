@@ -1,12 +1,11 @@
 import { defineSchema, defineTable } from 'convex/server';
-import { authTables } from '@convex-dev/auth/server';
 import { v } from 'convex/values';
 
 export default defineSchema({
-  ...authTables,
-
-  // User profiles with presence status
+  // User profiles with presence status (linked to Clerk via clerkId)
+  // clerkId is optional for backwards compat with pre-Clerk users (orphaned - cannot log in)
   users: defineTable({
+    clerkId: v.optional(v.string()),
     email: v.string(),
     name: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
@@ -20,6 +19,7 @@ export default defineSchema({
     lastHeartbeat: v.number(),
     createdAt: v.number(),
   })
+    .index('by_clerk_id', ['clerkId'])
     .index('by_email', ['email'])
     .index('by_presence', ['presenceStatus']),
 
@@ -140,11 +140,37 @@ export default defineSchema({
     isPublic: v.boolean(),
     // Optional link to a call or meeting
     callId: v.optional(v.id('calls')),
+    // Link to approved meeting request (both participants' events share this)
+    meetingRequestId: v.optional(v.id('meetingRequests')),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   })
     .index('by_user', ['userId'])
-    .index('by_user_and_time', ['userId', 'startTime']),
+    .index('by_user_and_time', ['userId', 'startTime'])
+    .index('by_meeting_request', ['meetingRequestId']),
+
+  // Meeting update requests (when someone edits a meeting with another user)
+  meetingUpdateRequests: defineTable({
+    meetingRequestId: v.id('meetingRequests'),
+    requestedByUserId: v.id('users'),
+    respondentUserId: v.id('users'), // the other participant who must approve
+    proposedTitle: v.string(),
+    proposedDescription: v.optional(v.string()),
+    proposedStartTime: v.number(),
+    proposedEndTime: v.number(),
+    proposedIsAllDay: v.boolean(),
+    proposedIsPublic: v.boolean(),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('approved'),
+      v.literal('denied')
+    ),
+    responseMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    respondedAt: v.optional(v.number()),
+  })
+    .index('by_meeting_request', ['meetingRequestId'])
+    .index('by_respondent_and_status', ['respondentUserId', 'status']),
 
   // Meeting request records with status
   meetingRequests: defineTable({
@@ -177,6 +203,7 @@ export default defineSchema({
       v.literal('call'),
       v.literal('meeting_request'),
       v.literal('meeting_response'),
+      v.literal('meeting_update_request'),
       v.literal('group_invite')
     ),
     title: v.string(),
