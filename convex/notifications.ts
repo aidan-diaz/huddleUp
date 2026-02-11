@@ -6,7 +6,7 @@ import {
   internalQuery,
 } from './_generated/server';
 import { internal } from './_generated/api';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId } from './lib/auth';
 import { getCurrentTimestamp } from './lib/utils';
 import { notificationTypeValidator } from './lib/validators';
 
@@ -344,6 +344,30 @@ export const notifyMeetingRequest = internalMutation({
       body: `${args.requesterName} requested: ${args.meetingTitle}`,
       referenceId: args.requestId,
       referenceType: 'meetingRequest',
+      isRead: false,
+      createdAt: getCurrentTimestamp(),
+    });
+  },
+});
+
+/**
+ * Helper to notify user about a meeting update request (someone wants to change a shared meeting)
+ */
+export const notifyMeetingUpdateRequest = internalMutation({
+  args: {
+    respondentId: v.id('users'),
+    requesterName: v.string(),
+    meetingTitle: v.string(),
+    updateRequestId: v.id('meetingUpdateRequests'),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert('notifications', {
+      userId: args.respondentId,
+      type: 'meeting_update_request',
+      title: 'Meeting change requested',
+      body: `${args.requesterName} wants to update: ${args.meetingTitle}`,
+      referenceId: args.updateRequestId,
+      referenceType: 'meetingUpdateRequest',
       isRead: false,
       createdAt: getCurrentTimestamp(),
     });

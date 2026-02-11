@@ -95,7 +95,7 @@ export function isPresenceStale(lastHeartbeat: number): boolean {
 // ==========================================
 
 /**
- * Get current user from database by email
+ * Get current user from database by Clerk ID
  * Throws error if not authenticated or user not found
  */
 export async function getCurrentUserOrThrow(ctx: QueryCtx | MutationCtx) {
@@ -106,7 +106,7 @@ export async function getCurrentUserOrThrow(ctx: QueryCtx | MutationCtx) {
 
   const user = await ctx.db
     .query('users')
-    .withIndex('by_email', (q) => q.eq('email', identity.email!))
+    .withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
     .first();
 
   if (!user) {

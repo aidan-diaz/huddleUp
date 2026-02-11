@@ -92,7 +92,7 @@ export default function EventModal({ event, initialDate, onClose }) {
       }
 
       if (isEditing) {
-        await updateEvent({
+        const result = await updateEvent({
           eventId: event._id,
           title: formData.title.trim(),
           description: formData.description.trim() || undefined,
@@ -101,6 +101,12 @@ export default function EventModal({ event, initialDate, onClose }) {
           isAllDay: formData.isAllDay,
           isPublic: formData.isPublic,
         });
+        // Meeting update requested (other user was notified and must approve)
+        if (result && typeof result === 'object' && result.requiresApproval) {
+          setError(result.message);
+          setIsSubmitting(false);
+          return;
+        }
       } else {
         await createEvent({
           title: formData.title.trim(),

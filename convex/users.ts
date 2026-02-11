@@ -1,58 +1,20 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId, getAuthUserIdOrNull, ensureUser } from './lib/auth';
 import { presenceStatusValidator } from './lib/validators';
 import {
   getCurrentTimestamp,
-  PRESENCE_TIMEOUT,
   isPresenceStale,
 } from './lib/utils';
 
 /**
- * Create or update a user profile on signup/login
+ * Ensure user profile exists (create from Clerk identity on first login).
+ * Call this when the app loads after Clerk sign-in.
  */
-export const createOrUpdateUser = mutation({
-  args: {
-    email: v.string(),
-    name: v.optional(v.string()),
-    avatarUrl: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Not authenticated');
-    }
-
-    // Check if user already exists by email
-    const existingUser = await ctx.db
-      .query('users')
-      .withIndex('by_email', (q) => q.eq('email', args.email))
-      .first();
-
-    const now = getCurrentTimestamp();
-
-    if (existingUser) {
-      // Update existing user
-      await ctx.db.patch(existingUser._id, {
-        name: args.name ?? existingUser.name,
-        avatarUrl: args.avatarUrl ?? existingUser.avatarUrl,
-        lastHeartbeat: now,
-        presenceStatus: 'active',
-      });
-      return existingUser._id;
-    }
-
-    // Create new user
-    const userId = await ctx.db.insert('users', {
-      email: args.email,
-      name: args.name,
-      avatarUrl: args.avatarUrl,
-      presenceStatus: 'active',
-      lastHeartbeat: now,
-      createdAt: now,
-    });
-
-    return userId;
+export const ensureUserExists = mutation({
+  args: {},
+  handler: async (ctx) => {
+    return ensureUser(ctx);
   },
 });
 
@@ -148,11 +110,8 @@ export const getUser = query({
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    
-    if (!userId) {
-      return null;
-    }
+    const userId = await getAuthUserIdOrNull(ctx);
+    if (!userId) return null;
 
     const user = await ctx.db.get(userId);
     return user;
@@ -209,10 +168,6 @@ export const updateProfile = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error('Not authenticated');
-    }
-
     const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error('User not found');

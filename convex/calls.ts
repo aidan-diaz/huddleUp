@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query, action, internalMutation, internalQuery } from './_generated/server';
 import { internal } from './_generated/api';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId } from './lib/auth';
 import { getCurrentTimestamp } from './lib/utils';
 import { callTypeValidator, callStatusValidator } from './lib/validators';
 

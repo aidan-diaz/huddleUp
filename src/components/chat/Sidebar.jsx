@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useClerk } from '@clerk/clerk-react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
@@ -18,7 +18,7 @@ export default function Sidebar({ isOpen, onToggle }) {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   
   const currentUser = useQuery(api.users.getCurrentUser);
-  const { signOut } = useAuthActions();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();

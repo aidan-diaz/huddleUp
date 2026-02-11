@@ -16,7 +16,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@convex-dev/auth": "^0.0.74",
+    "@clerk/clerk-react": "^5.60.0",
     "@livekit/components-react": "^2.6.8",
     "@livekit/components-styles": "^1.2.0",
     "@livekit/track-processors": "^0.7.0",
