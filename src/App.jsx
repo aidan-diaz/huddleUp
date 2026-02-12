@@ -45,16 +45,31 @@ function MainContent() {
  */
 function AuthenticatedApp() {
   // Ensure Convex user profile exists (creates from Clerk identity on first login)
-  useEnsureUser();
-  // Initialize presence tracking (sends heartbeat, handles visibility changes)
-  usePresence();
-  
+  const { user, isLoading } = useEnsureUser();
+
+  // Don't render app content until user exists in Convex. This prevents a race where
+  // presence heartbeat, notifications, etc. would run before the user is created,
+  // causing "User profile not found" and the try-again screen on new sign-ups.
+  if (isLoading || !user) {
+    return <LoadingScreen message="Setting up your account..." />;
+  }
+
   return (
     <ErrorBoundary name="ChatApp">
-      <CallProvider>
-        <CallAwareApp />
-      </CallProvider>
+      <AuthenticatedContent />
     </ErrorBoundary>
+  );
+}
+
+/**
+ * Inner wrapper that runs presence and call logic only after user exists
+ */
+function AuthenticatedContent() {
+  usePresence();
+  return (
+    <CallProvider>
+      <CallAwareApp />
+    </CallProvider>
   );
 }
 
