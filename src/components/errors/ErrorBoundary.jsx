@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { logError } from '../../utils/errorUtils';
 import './ErrorBoundary.css';
 
@@ -68,7 +69,7 @@ class ErrorBoundary extends Component {
       return (
         <div className="error-boundary" role="alert">
           <div className="error-boundary__icon" aria-hidden="true">
-            ⚠️
+            <ExclamationTriangleIcon className="w-12 h-12" />
           </div>
           <h2 className="error-boundary__title">Something went wrong</h2>
           <p className="error-boundary__message">

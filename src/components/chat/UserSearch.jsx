@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useNavigate } from 'react-router-dom';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import UserPresence from '../common/UserPresence';
@@ -36,8 +37,8 @@ export default function UserSearch({ onClose }) {
       <div className="user-search" onClick={(e) => e.stopPropagation()}>
         <div className="user-search__header">
           <h2>New Chat</h2>
-          <button className="user-search__close" onClick={onClose}>
-            ✕
+          <button className="user-search__close" onClick={onClose} aria-label="Close">
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
 

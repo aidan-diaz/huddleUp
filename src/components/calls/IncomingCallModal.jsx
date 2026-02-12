@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
+import { XMarkIcon, VideoCameraIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import './IncomingCallModal.css';
@@ -51,7 +52,7 @@ export default function IncomingCallModal({ onAnswer }) {
       <div className="incoming-call">
         <div className="incoming-call__content">
           <div className="incoming-call__icon">
-            {incomingCall.type === 'video' ? '📹' : '📞'}
+            {incomingCall.type === 'video' ? <VideoCameraIcon className="w-16 h-16" aria-hidden /> : <PhoneIcon className="w-16 h-16" aria-hidden />}
           </div>
           
           <div className="incoming-call__avatar">
@@ -74,7 +75,7 @@ export default function IncomingCallModal({ onAnswer }) {
               disabled={isAnswering}
               aria-label="Decline call"
             >
-              <span>✕</span>
+              <XMarkIcon className="w-5 h-5 mr-2" aria-hidden />
               Decline
             </button>
             <button
@@ -90,7 +91,7 @@ export default function IncomingCallModal({ onAnswer }) {
                 </>
               ) : (
                 <>
-                  <span>{incomingCall.type === 'video' ? '📹' : '📞'}</span>
+                  {incomingCall.type === 'video' ? <VideoCameraIcon className="w-5 h-5 mr-2" aria-hidden /> : <PhoneIcon className="w-5 h-5 mr-2" aria-hidden />}
                   Accept
                 </>
               )}

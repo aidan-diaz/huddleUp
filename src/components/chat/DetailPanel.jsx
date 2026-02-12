@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
+import { XMarkIcon, ArrowUpIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import UserPresence from '../common/UserPresence';
@@ -30,7 +31,7 @@ export default function DetailPanel({ type, conversation, group, onClose }) {
             onClick={onClose}
             aria-label="Close details"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
 
@@ -101,7 +102,7 @@ export default function DetailPanel({ type, conversation, group, onClose }) {
           onClick={onClose}
           aria-label="Close details"
         >
-          ✕
+          <XMarkIcon className="w-5 h-5" aria-hidden />
         </button>
       </div>
 
@@ -198,14 +199,14 @@ function MembersList({ members, myRole, groupId }) {
                 onClick={() => handleRoleChange(member.userId, 'admin')}
                 title="Make admin"
               >
-                ⬆️
+                <ArrowUpIcon className="w-5 h-5" aria-hidden />
               </button>
               <button
                 className="detail-panel__member-action"
                 onClick={() => handleRemove(member.userId)}
                 title="Remove"
               >
-                ✕
+                <XMarkIcon className="w-5 h-5" aria-hidden />
               </button>
             </div>
           )}
@@ -248,7 +249,7 @@ function PinnedMessagesList({ messages }) {
             onClick={() => handleUnpin(pin.message?._id)}
             title="Unpin"
           >
-            📌
+            <MapPinIcon className="w-5 h-5" aria-hidden />
           </button>
         </li>
       ))}

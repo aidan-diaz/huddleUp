@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useMutation } from 'convex/react';
+import { XMarkIcon, PaperClipIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import { sanitizeInput } from '../../utils/sanitize';
@@ -182,7 +183,7 @@ export default function MessageInput({ conversationId, groupId }) {
             onClick={() => setError('')}
             aria-label="Dismiss error"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
       )}
@@ -196,7 +197,7 @@ export default function MessageInput({ conversationId, groupId }) {
 
       {pendingFile && !isUploading && (
         <div className="message-input__draft-attachment">
-          <span className="message-input__draft-attachment-icon">📎</span>
+          <PaperClipIcon className="message-input__draft-attachment-icon w-5 h-5 flex-shrink-0" aria-hidden />
           <span className="message-input__draft-attachment-name" title={pendingFile.name}>
             {pendingFile.name}
           </span>
@@ -209,7 +210,7 @@ export default function MessageInput({ conversationId, groupId }) {
             onClick={removePendingFile}
             aria-label="Remove attachment"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
       )}
@@ -222,7 +223,7 @@ export default function MessageInput({ conversationId, groupId }) {
           disabled={isDisabled || isUploading}
           aria-label="Attach file"
         >
-          📎
+          <PaperClipIcon className="w-5 h-5" aria-hidden />
         </button>
         <input
           ref={fileInputRef}
@@ -257,7 +258,7 @@ export default function MessageInput({ conversationId, groupId }) {
           disabled={isDisabled || !canSend}
           aria-label="Send message"
         >
-          <span aria-hidden="true">→</span>
+          <ArrowRightIcon className="w-5 h-5" aria-hidden />
         </button>
       </div>
     </form>

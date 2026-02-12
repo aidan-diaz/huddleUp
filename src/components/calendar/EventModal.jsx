@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation } from 'convex/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import { format, setHours, setMinutes } from 'date-fns';
 import PropTypes from 'prop-types';
@@ -148,7 +149,7 @@ export default function EventModal({ event, initialDate, onClose }) {
         <div className="modal__header">
           <h2>{isEditing ? 'Edit Event' : 'New Event'}</h2>
           <button className="modal__close" onClick={onClose} aria-label="Close">
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
 

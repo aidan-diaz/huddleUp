@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
@@ -119,7 +120,8 @@ export default function CalendarView() {
           className="btn btn--primary calendar-view__schedule-btn"
           onClick={() => setShowScheduleModal(true)}
         >
-          📅 Schedule Meeting
+          <CalendarIcon className="w-5 h-5 inline-block mr-2 align-middle" aria-hidden />
+          Schedule Meeting
         </button>
       </div>
 
@@ -133,7 +135,7 @@ export default function CalendarView() {
                   onClick={handlePrevMonth}
                   aria-label="Previous month"
                 >
-                  ‹
+                  <ChevronLeftIcon className="w-5 h-5" aria-hidden />
                 </button>
                 <h2 className="calendar-view__month">
                   {format(currentMonth, 'MMMM yyyy')}
@@ -143,7 +145,7 @@ export default function CalendarView() {
                   onClick={handleNextMonth}
                   aria-label="Next month"
                 >
-                  ›
+                  <ChevronRightIcon className="w-5 h-5" aria-hidden />
                 </button>
               </div>
               <button 

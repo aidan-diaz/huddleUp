@@ -1,4 +1,10 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  ChatBubbleLeftRightIcon,
+  UsersIcon,
+  PhoneIcon,
+  CalendarIcon,
+} from '@heroicons/react/24/outline';
 import './WelcomeView.css';
 
 export default function WelcomeView() {
@@ -35,7 +41,7 @@ export default function WelcomeView() {
             className="welcome-view__feature welcome-view__feature--interactive"
             onClick={handleNewChat}
           >
-            <span className="welcome-view__feature-icon">💬</span>
+            <ChatBubbleLeftRightIcon className="welcome-view__feature-icon w-5 h-5" aria-hidden />
             <div>
               <h3>Direct Messages</h3>
               <p>Chat one-on-one with your contacts</p>
@@ -45,7 +51,7 @@ export default function WelcomeView() {
             className="welcome-view__feature welcome-view__feature--interactive"
             onClick={handleNewGroup}
           >
-            <span className="welcome-view__feature-icon">👥</span>
+            <UsersIcon className="welcome-view__feature-icon w-5 h-5" aria-hidden />
             <div>
               <h3>Group Chats</h3>
               <p>Collaborate with multiple people at once</p>
@@ -55,7 +61,7 @@ export default function WelcomeView() {
             className="welcome-view__feature welcome-view__feature--interactive"
             onClick={handleVideoCalls}
           >
-            <span className="welcome-view__feature-icon">📞</span>
+            <PhoneIcon className="welcome-view__feature-icon w-5 h-5" aria-hidden />
             <div>
               <h3>Video Calls</h3>
               <p>Start audio or video calls instantly</p>
@@ -65,7 +71,7 @@ export default function WelcomeView() {
             className="welcome-view__feature welcome-view__feature--interactive"
             onClick={handleCalendar}
           >
-            <span className="welcome-view__feature-icon">📅</span>
+            <CalendarIcon className="welcome-view__feature-icon w-5 h-5" aria-hidden />
             <div>
               <h3>Calendar</h3>
               <p>Schedule meetings and manage your time</p>

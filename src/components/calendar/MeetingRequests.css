@@ -32,7 +32,7 @@
 }
 
 .meeting-requests__tab--active {
-  background-color: var(--color-primary);
+  background-color: #10b981; /* emerald-500 */
   color: white;
 }
 
@@ -52,7 +52,7 @@
 
 .meeting-requests__tab--active .meeting-requests__badge {
   background-color: white;
-  color: var(--color-primary);
+  color: #10b981;
 }
 
 .meeting-requests__content {

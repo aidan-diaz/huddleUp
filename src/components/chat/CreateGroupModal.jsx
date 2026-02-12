@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useNavigate } from 'react-router-dom';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -136,8 +137,9 @@ export default function CreateGroupModal({ onClose }) {
                     <button
                       type="button"
                       onClick={() => handleRemoveMember(member._id)}
+                      aria-label="Remove member"
                     >
-                      ✕
+                      <XMarkIcon className="w-4 h-4" aria-hidden />
                     </button>
                   </span>
                 ))}

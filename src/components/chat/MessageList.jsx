@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { ArrowDownIcon } from '@heroicons/react/24/outline';
 import { usePaginatedQuery, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
@@ -142,7 +143,7 @@ export default function MessageList({ conversationId, groupId }) {
           onClick={scrollToBottom}
           aria-label="Scroll to bottom"
         >
-          <span aria-hidden="true">↓</span>
+          <ArrowDownIcon className="w-5 h-5" aria-hidden />
         </button>
       )}
     </div>

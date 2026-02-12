@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import {
   format,
@@ -238,14 +239,14 @@ export default function ScheduleMeetingModal({
         <div className="modal__header">
           <h2>Schedule Meeting</h2>
           <button className="modal__close" onClick={onClose} aria-label="Close">
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
 
         <div className="modal__body schedule-meeting-modal__body">
           {success ? (
             <div className="schedule-meeting-modal__success">
-              <span className="schedule-meeting-modal__success-icon">✓</span>
+              <CheckCircleIcon className="schedule-meeting-modal__success-icon w-12 h-12 text-emerald-500" aria-hidden />
               <p>Meeting request sent!</p>
               <p className="schedule-meeting-modal__success-subtitle">
                 {selectedUser?.name || 'They'} will receive your request.
@@ -359,7 +360,7 @@ export default function ScheduleMeetingModal({
                     className="schedule-meeting-modal__date-btn"
                     disabled={!canGoPrevious}
                   >
-                    ‹
+                    <ChevronLeftIcon className="w-5 h-5" aria-hidden />
                   </button>
                   <span className="schedule-meeting-modal__date">
                     {format(selectedDate, 'EEEE, MMMM d, yyyy')}
@@ -370,7 +371,7 @@ export default function ScheduleMeetingModal({
                     onClick={() => handleDateChange(1)}
                     className="schedule-meeting-modal__date-btn"
                   >
-                    ›
+                    <ChevronRightIcon className="w-5 h-5" aria-hidden />
                   </button>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { useClerk } from '@clerk/clerk-react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Bars3Icon, XMarkIcon, ChatBubbleLeftRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import ConversationList from './ConversationList';
@@ -48,7 +49,7 @@ export default function Sidebar({ isOpen, onToggle }) {
         onClick={onToggle}
         aria-label="Open sidebar"
       >
-        ☰
+        <Bars3Icon className="w-6 h-6" aria-hidden />
       </button>
     );
   }
@@ -72,7 +73,7 @@ export default function Sidebar({ isOpen, onToggle }) {
             onClick={onToggle}
             aria-label="Close sidebar"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
       </div>
@@ -131,13 +132,15 @@ export default function Sidebar({ isOpen, onToggle }) {
           className={`sidebar__nav-link ${!isCalendarView ? 'sidebar__nav-link--active' : ''}`}
           onClick={() => navigate('/')}
         >
-          💬 Messages
+          <ChatBubbleLeftRightIcon className="sidebar__nav-icon w-4 h-4" aria-hidden />
+          Messages
         </button>
         <button
           className={`sidebar__nav-link ${isCalendarView ? 'sidebar__nav-link--active' : ''}`}
           onClick={() => navigate('/calendar')}
         >
-          📅 Calendar
+          <CalendarIcon className="sidebar__nav-icon w-4 h-4" aria-hidden />
+          Calendar
         </button>
       </div>
 

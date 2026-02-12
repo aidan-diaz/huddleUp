@@ -1,4 +1,5 @@
 import { useQuery } from 'convex/react';
+import { PaperClipIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -65,11 +66,13 @@ export default function GroupList() {
               </div>
               {group.lastMessage && (
                 <p className="group-list__preview">
-                  {group.lastMessage.type === 'file'
-                    ? '📎 File attachment'
-                    : group.lastMessage.type === 'call'
-                    ? '📞 Call'
-                    : group.lastMessage.content}
+                  {group.lastMessage.type === 'file' ? (
+                    <><PaperClipIcon className="w-4 h-4 inline-block mr-1 align-middle" aria-hidden />File attachment</>
+                  ) : group.lastMessage.type === 'call' ? (
+                    <><PhoneIcon className="w-4 h-4 inline-block mr-1 align-middle" aria-hidden />Call</>
+                  ) : (
+                    group.lastMessage.content
+                  )}
                 </p>
               )}
             </div>

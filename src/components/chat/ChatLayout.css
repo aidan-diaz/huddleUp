@@ -2,7 +2,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--color-background);
+  background-color: #ffffff;
 }
 
 .chat-layout__main {

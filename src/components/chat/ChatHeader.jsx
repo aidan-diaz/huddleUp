@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import {
+  CalendarIcon,
+  PhoneIcon,
+  VideoCameraIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
 import UserPresence from '../common/UserPresence';
 import { useCall } from '../../hooks/useCall.jsx';
 import { ScheduleMeetingModal } from '../calendar';
@@ -72,7 +78,7 @@ export default function ChatHeader({
             aria-label="Schedule meeting"
             onClick={() => setShowScheduleModal(true)}
           >
-            📅
+            <CalendarIcon className="w-5 h-5" aria-hidden />
           </button>
         )}
         <button
@@ -82,7 +88,7 @@ export default function ChatHeader({
           onClick={() => handleStartCall('audio')}
           disabled={isInCall || isStartingCall}
         >
-          📞
+          <PhoneIcon className="w-5 h-5" aria-hidden />
         </button>
         <button
           className="chat-header__action"
@@ -91,7 +97,7 @@ export default function ChatHeader({
           onClick={() => handleStartCall('video')}
           disabled={isInCall || isStartingCall}
         >
-          📹
+          <VideoCameraIcon className="w-5 h-5" aria-hidden />
         </button>
         <button
           className="chat-header__action"
@@ -99,7 +105,7 @@ export default function ChatHeader({
           title="Show details"
           aria-label="Show chat details"
         >
-          ℹ️
+          <InformationCircleIcon className="w-5 h-5" aria-hidden />
         </button>
       </div>
 

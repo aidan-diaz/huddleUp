@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import { format } from 'date-fns';
 import PropTypes from 'prop-types';
@@ -150,13 +151,13 @@ function IncomingRequests({ requests, onRespond, respondingId }) {
           )}
 
           <div className="meeting-request-card__time">
-            <span>📅</span>
+            <CalendarIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(request.proposedStartTime), 'EEEE, MMMM d, yyyy')}
             </span>
           </div>
           <div className="meeting-request-card__time">
-            <span>🕒</span>
+            <ClockIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(request.proposedStartTime), 'h:mm a')} - {format(new Date(request.proposedEndTime), 'h:mm a')}
             </span>
@@ -234,13 +235,13 @@ function OutgoingRequests({ requests, onCancel }) {
           )}
 
           <div className="meeting-request-card__time">
-            <span>📅</span>
+            <CalendarIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(request.proposedStartTime), 'EEEE, MMMM d, yyyy')}
             </span>
           </div>
           <div className="meeting-request-card__time">
-            <span>🕒</span>
+            <ClockIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(request.proposedStartTime), 'h:mm a')} - {format(new Date(request.proposedEndTime), 'h:mm a')}
             </span>
@@ -317,13 +318,13 @@ function MeetingUpdateRequests({ updateRequests, onRespond, respondingId }) {
           )}
 
           <div className="meeting-request-card__time">
-            <span>📅</span>
+            <CalendarIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(ur.proposedStartTime), 'EEEE, MMMM d, yyyy')}
             </span>
           </div>
           <div className="meeting-request-card__time">
-            <span>🕒</span>
+            <ClockIcon className="w-5 h-5 flex-shrink-0" aria-hidden />
             <span>
               {format(new Date(ur.proposedStartTime), 'h:mm a')} -{' '}
               {format(new Date(ur.proposedEndTime), 'h:mm a')}
