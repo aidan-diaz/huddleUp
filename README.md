@@ -1,6 +1,14 @@
 # HuddleUp
 
-HuddleUp is a real-time collaboration application that allows users to communicate one-on-one or in groups via messaging and video chat.
+HuddleUp is an AI created real-time collaboration application that allows users to communicate one-on-one or in groups via messaging and video chat.
+
+## Preview
+
+![App Screenshot](./public/thumbnail.png)
+
+## Live Demo
+
+[View Live Site](https://huddle-up-xi.vercel.app/)
 
 ## Tech Stack
 
