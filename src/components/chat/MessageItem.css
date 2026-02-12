@@ -70,14 +70,14 @@
   max-width: 30rem;
   min-width: 6.5rem; /* Enough for words like "testing!" to stay on one line */
   padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-surface);
+  background-color: var(--color-received-message);
   border-radius: var(--radius-lg);
   border-bottom-left-radius: var(--radius-sm);
   position: relative;
 }
 
 .message-item--own .message-item__bubble {
-  background-color: var(--color-primary);
+  background-color: #10b981; /* emerald-500 */
   color: white;
   border-bottom-left-radius: var(--radius-lg);
   border-bottom-right-radius: var(--radius-sm);
@@ -87,7 +87,7 @@
   display: block;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--color-primary);
+  color: #059669; /* emerald-600 */
   margin-bottom: var(--spacing-xs);
 }
 
@@ -113,6 +113,7 @@
 .message-item__time {
   display: block;
   font-size: var(--font-size-xs);
+  font-family: 'Source Serif 4', Georgia, serif;
   color: var(--color-text-muted);
   margin-top: var(--spacing-xs);
   text-align: right;
@@ -203,13 +204,13 @@
 
 /* Deleted Message */
 .message-item--deleted .message-item__content {
-  background-color: var(--color-surface);
+  background-color: var(--color-received-message);
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-lg);
 }
 
 .message-item--own.message-item--deleted .message-item__content {
-  background-color: var(--color-primary);
+  background-color: #10b981; /* emerald-500 */
 }
 
 .message-item__deleted-text {
@@ -306,7 +307,7 @@
 
 .message-item__file-download {
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-primary);
+  background-color: #10b981; /* emerald-500 */
   color: white;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);

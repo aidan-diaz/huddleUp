@@ -1,4 +1,5 @@
 import { useQuery } from 'convex/react';
+import { VideoCameraIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,7 +31,7 @@ export default function CallHistory({ conversationId, groupId }) {
         {callHistory.map((call) => (
           <li key={call._id} className="call-history__item">
             <div className="call-history__icon">
-              {call.type === 'video' ? '📹' : '📞'}
+              {call.type === 'video' ? <VideoCameraIcon className="w-5 h-5" aria-hidden /> : <PhoneIcon className="w-5 h-5" aria-hidden />}
             </div>
             <div className="call-history__details">
               <span className="call-history__type">

@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from 'convex/react';
+import {
+  VideoCameraIcon,
+  PhoneIcon,
+  PhotoIcon,
+  XCircleIcon,
+  ViewfinderCircleIcon,
+  BuildingOffice2Icon,
+  SunIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import {
   LiveKitRoom,
@@ -24,39 +34,34 @@ const LIVEKIT_URL = import.meta.env.VITE_LIVEKIT_URL || 'wss://localhost:7880';
 
 // Virtual background images - using public domain images
 const VIRTUAL_BACKGROUNDS = [
-  {
-    id: 'blur',
-    name: 'Blur',
-    type: 'blur',
-    icon: '🔵',
-  },
+  { id: 'blur', name: 'Blur', type: 'blur', Icon: ViewfinderCircleIcon },
   {
     id: 'office',
     name: 'Office',
     type: 'image',
     url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80',
-    icon: '🏢',
+    Icon: BuildingOffice2Icon,
   },
   {
     id: 'nature',
     name: 'Nature',
     type: 'image',
     url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80',
-    icon: '🌲',
+    Icon: PhotoIcon,
   },
   {
     id: 'beach',
     name: 'Beach',
     type: 'image',
     url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80',
-    icon: '🏖️',
+    Icon: SunIcon,
   },
   {
     id: 'space',
     name: 'Space',
     type: 'image',
     url: 'https://images.unsplash.com/photo-1462332420958-a05d1e002413?w=1920&q=80',
-    icon: '🌌',
+    Icon: SparklesIcon,
   },
 ];
 
@@ -89,7 +94,7 @@ export default function VideoRoom({ callId, token, roomName, callType, onLeave }
       <div className="video-room video-room--fallback">
         <div className="video-room__fallback-content">
           <div className="video-room__fallback-icon">
-            {callType === 'video' ? '📹' : '📞'}
+            {callType === 'video' ? <VideoCameraIcon className="w-16 h-16" aria-hidden /> : <PhoneIcon className="w-16 h-16" aria-hidden />}
           </div>
           <h2>{callType === 'video' ? 'Video' : 'Audio'} Call</h2>
           <p className="video-room__fallback-message">
@@ -294,7 +299,8 @@ function VideoCallContent({ callType, roomName, onLeave }) {
     <div className="video-room__content">
       <div className="video-room__header">
         <span className="video-room__room-info">
-          {callType === 'video' ? '📹' : '📞'} {participants.length} participant{participants.length !== 1 ? 's' : ''}
+          {callType === 'video' ? <VideoCameraIcon className="w-5 h-5 inline-block mr-1 align-middle" aria-hidden /> : <PhoneIcon className="w-5 h-5 inline-block mr-1 align-middle" aria-hidden />}
+          {participants.length} participant{participants.length !== 1 ? 's' : ''}
         </span>
         
         {/* Background selector button - only for video calls */}
@@ -305,7 +311,8 @@ function VideoCallContent({ callType, roomName, onLeave }) {
               onClick={() => setShowBackgroundMenu(!showBackgroundMenu)}
               title="Change background"
             >
-              🖼️ Background
+              <PhotoIcon className="w-5 h-5 inline-block mr-2 align-middle" aria-hidden />
+              Background
             </button>
             
             {showBackgroundMenu && (
@@ -319,19 +326,22 @@ function VideoCallContent({ callType, roomName, onLeave }) {
                   className={`video-room__bg-option ${backgroundMode === 'none' ? 'video-room__bg-option--selected' : ''}`}
                   onClick={() => handleBackgroundSelect('none')}
                 >
-                  <span className="video-room__bg-icon">❌</span>
+                  <XCircleIcon className="video-room__bg-icon w-5 h-5" aria-hidden />
                   <span>None</span>
                 </button>
-                {VIRTUAL_BACKGROUNDS.map((bg) => (
-                  <button
-                    key={bg.id}
-                    className={`video-room__bg-option ${backgroundMode === bg.id ? 'video-room__bg-option--selected' : ''}`}
-                    onClick={() => handleBackgroundSelect(bg.id)}
-                  >
-                    <span className="video-room__bg-icon">{bg.icon}</span>
-                    <span>{bg.name}</span>
-                  </button>
-                ))}
+                {VIRTUAL_BACKGROUNDS.map((bg) => {
+                  const IconComponent = bg.Icon;
+                  return (
+                    <button
+                      key={bg.id}
+                      className={`video-room__bg-option ${backgroundMode === bg.id ? 'video-room__bg-option--selected' : ''}`}
+                      onClick={() => handleBackgroundSelect(bg.id)}
+                    >
+                      <IconComponent className="video-room__bg-icon w-5 h-5" aria-hidden />
+                      <span>{bg.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

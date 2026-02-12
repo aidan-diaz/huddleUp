@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { createPortal } from 'react-dom';
+import {
+  Cog6ToothIcon,
+  ArrowLeftIcon,
+  ChatBubbleLeftRightIcon,
+  PhoneIcon,
+  CalendarIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import { formatRelativeTime } from '../../utils/dateUtils';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
@@ -141,7 +149,7 @@ export default function NotificationBell() {
                   onClick={() => setShowSettings(!showSettings)}
                   aria-label="Notification settings"
                 >
-                  ⚙️
+                  <Cog6ToothIcon className="w-5 h-5" aria-hidden />
                 </button>
               </div>
             </div>
@@ -190,7 +198,8 @@ export default function NotificationBell() {
                   className="notification-bell__back-btn"
                   onClick={() => setShowSettings(false)}
                 >
-                  ← Back to notifications
+                  <ArrowLeftIcon className="w-4 h-4 inline-block mr-1 -mt-0.5" aria-hidden />
+                  Back to notifications
                 </button>
               </div>
             ) : (
@@ -250,18 +259,19 @@ export default function NotificationBell() {
 }
 
 function getNotificationIcon(type) {
+  const iconClass = 'w-5 h-5 flex-shrink-0';
   switch (type) {
     case 'message':
-      return '💬';
+      return <ChatBubbleLeftRightIcon className={iconClass} aria-hidden />;
     case 'call':
-      return '📞';
+      return <PhoneIcon className={iconClass} aria-hidden />;
     case 'meeting_request':
     case 'meeting_response':
     case 'meeting_update_request':
-      return '📅';
+      return <CalendarIcon className={iconClass} aria-hidden />;
     case 'group_invite':
-      return '👥';
+      return <UsersIcon className={iconClass} aria-hidden />;
     default:
-      return '🔔';
+      return <BellIcon className={iconClass} aria-hidden />;
   }
 }

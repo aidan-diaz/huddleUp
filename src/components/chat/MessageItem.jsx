@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import PropTypes from 'prop-types';
+import {
+  PhoneIcon,
+  PencilSquareIcon,
+  MapPinIcon,
+  TrashIcon,
+  PaperClipIcon,
+} from '@heroicons/react/24/outline';
 import { formatMessageTime, formatRelativeTime } from '../../utils/dateUtils';
 import { sanitizeText } from '../../utils/sanitize';
 import './MessageItem.css';
@@ -85,7 +92,7 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
     return (
       <div className="message-item message-item--system">
         <div className="message-item__system-content">
-          {message.type === 'call' && <span className="message-item__call-icon">📞</span>}
+          {message.type === 'call' && <PhoneIcon className="message-item__call-icon w-5 h-5" aria-hidden />}
           <span>{message.content}</span>
           {message.callDuration && (
             <span className="message-item__call-duration">
@@ -190,14 +197,14 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
                 onClick={() => setIsEditing(true)}
                 title="Edit"
               >
-                ✏️
+                <PencilSquareIcon className="w-5 h-5" aria-hidden />
               </button>
             )}
             <button className="message-item__action" onClick={handlePin} title="Pin">
-              📌
+              <MapPinIcon className="w-5 h-5" aria-hidden />
             </button>
             <button className="message-item__action" onClick={handleDelete} title="Delete">
-              🗑️
+              <TrashIcon className="w-5 h-5" aria-hidden />
             </button>
           </div>
         )}
@@ -205,7 +212,7 @@ export default function MessageItem({ message, isOwnMessage, showAvatar }) {
         {showActions && !isEditing && !isOwnMessage && (
           <div className="message-item__actions">
             <button className="message-item__action" onClick={handlePin} title="Pin">
-              📌
+              <MapPinIcon className="w-5 h-5" aria-hidden />
             </button>
           </div>
         )}
@@ -232,7 +239,7 @@ function FileAttachment({ fileName, fileType, fileSize, fileUrl }) {
 
   return (
     <div className="message-item__file">
-      <span className="message-item__file-icon">📎</span>
+      <PaperClipIcon className="message-item__file-icon w-6 h-6 flex-shrink-0" aria-hidden />
       <div className="message-item__file-info">
         <span className="message-item__file-name">{fileName}</span>
         <span className="message-item__file-size">{formattedSize}</span>

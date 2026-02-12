@@ -1,4 +1,5 @@
 import { useMutation } from 'convex/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { api } from '../../../convex/_generated/api';
 import { format } from 'date-fns';
 import PropTypes from 'prop-types';
@@ -65,7 +66,7 @@ export default function EventList({ events, onEdit, emptyMessage }) {
             onClick={(e) => handleDelete(event, e)}
             aria-label="Delete event"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" aria-hidden />
           </button>
         </div>
       ))}

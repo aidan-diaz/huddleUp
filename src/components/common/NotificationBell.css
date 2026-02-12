@@ -5,10 +5,23 @@
 .notification-bell__button {
   background: none;
   border: none;
-  font-size: var(--font-size-lg);
   cursor: pointer;
   padding: var(--spacing-xs);
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eab308; /* yellow-500 - visible on white sidebar */
+}
+
+.notification-bell__button:hover {
+  color: #ca8a04; /* yellow-600 - darker on hover */
+}
+
+.notification-bell__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
 .notification-bell__badge {
