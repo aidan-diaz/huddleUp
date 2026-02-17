@@ -14,7 +14,7 @@ HuddleUp is a real-time collaboration application that allows users to communica
 
 - **Frontend**: React 18 with Vite
 - **Backend**: Convex (real-time database and serverless functions)
-- **Authentication**: Convex Auth with email/password
+- **Authentication**: Clerk
 - **Video Calls**: LiveKit
 - **Testing**: Vitest with React Testing Library
 - **Linting**: ESLint with React and accessibility plugins
@@ -46,11 +46,11 @@ HuddleUp is a real-time collaboration application that allows users to communica
    ```
    This will prompt you to log in to Convex and create a new project. Follow the prompts.
 
-4. Copy the environment example and add your Convex URL:
+4. Copy the environment example and add your configuration:
    ```bash
    cp .env.example .env.local
    ```
-   Then update `VITE_CONVEX_URL` with your Convex deployment URL.
+   Then update `VITE_CONVEX_URL` with your Convex deployment URL and `VITE_CLERK_PUBLISHABLE_KEY` with your Clerk publishable key (from [Clerk Dashboard](https://dashboard.clerk.com)).
 
 5. Start the development server:
    ```bash
@@ -78,7 +78,7 @@ HuddleUp is a real-time collaboration application that allows users to communica
 huddleUp/
 ├── convex/              # Convex backend
 │   ├── schema.ts        # Database schema
-│   ├── auth.ts          # Authentication setup
+│   ├── auth.config.ts   # Clerk JWT verification
 │   ├── http.ts          # HTTP routes
 │   └── lib/             # Shared utilities
 ├── src/
@@ -111,6 +111,7 @@ huddleUp/
 
 ### Frontend (.env.local)
 - `VITE_CONVEX_URL` - Convex deployment URL
+- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key (from [Clerk Dashboard](https://dashboard.clerk.com))
 
 ### Convex Dashboard
 - `LIVEKIT_API_KEY` - LiveKit API credentials
